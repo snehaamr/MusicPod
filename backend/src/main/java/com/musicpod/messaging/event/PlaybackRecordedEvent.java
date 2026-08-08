@@ -14,7 +14,11 @@ public record PlaybackRecordedEvent(
         int schemaVersion
 ) {
 
-    private static final int CURRENT_SCHEMA_VERSION = 1;
+    public static final String EVENT_TYPE =
+            "playback.recorded.v1";
+
+    private static final int CURRENT_SCHEMA_VERSION =
+            1;
 
     public static PlaybackRecordedEvent from(
             PlaybackEvent playbackEvent) {

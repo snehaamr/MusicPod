@@ -70,3 +70,10 @@ app:
 
   kafka:
     enabled: ${KAFKA_ENABLED:true}
+
+  outbox:
+    batch-size: ${OUTBOX_BATCH_SIZE:25}
+    poll-interval-ms: ${OUTBOX_POLL_INTERVAL_MS:1000}
+    initial-delay-ms: ${OUTBOX_INITIAL_DELAY_MS:1000}
+    send-timeout-seconds: ${OUTBOX_SEND_TIMEOUT_SECONDS:10}
+    max-attempts: ${OUTBOX_MAX_ATTEMPTS:20}
