@@ -1,0 +1,12 @@
+/Users/snehaavula/Projects/MusicPod/backend/src/main/java/com/musicpod/MusicPodApplication.java
+/Users/snehaavula/Projects/MusicPod/backend/src/main/java/com/musicpod/catalog/artist/Artist.java
+/Users/snehaavula/Projects/MusicPod/backend/src/main/java/com/musicpod/catalog/artist/ArtistController.java
+/Users/snehaavula/Projects/MusicPod/backend/src/main/java/com/musicpod/catalog/artist/ArtistRepository.java
+/Users/snehaavula/Projects/MusicPod/backend/src/main/java/com/musicpod/catalog/artist/ArtistResponse.java
+/Users/snehaavula/Projects/MusicPod/backend/src/main/java/com/musicpod/catalog/artist/ArtistService.java
+/Users/snehaavula/Projects/MusicPod/backend/src/main/java/com/musicpod/catalog/artist/CreateArtistRequest.java
+/Users/snehaavula/Projects/MusicPod/backend/src/main/java/com/musicpod/catalog/artist/UpdateArtistRequest.java
+/Users/snehaavula/Projects/MusicPod/backend/src/main/java/com/musicpod/common/api/ApiError.java
+/Users/snehaavula/Projects/MusicPod/backend/src/main/java/com/musicpod/common/api/PageResponse.java
+/Users/snehaavula/Projects/MusicPod/backend/src/main/java/com/musicpod/common/exception/GlobalExceptionHandler.java
+/Users/snehaavula/Projects/MusicPod/backend/src/main/java/com/musicpod/common/exception/ResourceNotFoundException.java

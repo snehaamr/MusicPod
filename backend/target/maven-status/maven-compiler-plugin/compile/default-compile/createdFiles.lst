@@ -1,0 +1,12 @@
+com/musicpod/catalog/artist/CreateArtistRequest.class
+com/musicpod/common/exception/ResourceNotFoundException.class
+com/musicpod/common/exception/GlobalExceptionHandler.class
+com/musicpod/MusicPodApplication.class
+com/musicpod/catalog/artist/UpdateArtistRequest.class
+com/musicpod/catalog/artist/ArtistResponse.class
+com/musicpod/common/api/PageResponse.class
+com/musicpod/catalog/artist/ArtistService.class
+com/musicpod/common/api/ApiError.class
+com/musicpod/catalog/artist/ArtistRepository.class
+com/musicpod/catalog/artist/ArtistController.class
+com/musicpod/catalog/artist/Artist.class
