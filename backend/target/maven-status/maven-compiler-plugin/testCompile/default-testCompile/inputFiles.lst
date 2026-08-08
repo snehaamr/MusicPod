@@ -5,3 +5,4 @@
 /Users/snehaavula/Projects/MusicPod/backend/src/test/java/com/musicpod/catalog/track/TrackControllerTests.java
 /Users/snehaavula/Projects/MusicPod/backend/src/test/java/com/musicpod/library/likedtrack/LikedTrackControllerTests.java
 /Users/snehaavula/Projects/MusicPod/backend/src/test/java/com/musicpod/library/playlist/PlaylistControllerTests.java
+/Users/snehaavula/Projects/MusicPod/backend/src/test/java/com/musicpod/playback/PlaybackControllerTests.java

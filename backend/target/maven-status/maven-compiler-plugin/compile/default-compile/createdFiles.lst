@@ -16,15 +16,19 @@ com/musicpod/auth/AuthController.class
 com/musicpod/user/UserRepository.class
 com/musicpod/library/likedtrack/LikedTrackRepository.class
 com/musicpod/catalog/artist/CreateArtistRequest.class
+com/musicpod/playback/PlaybackEventRepository.class
 com/musicpod/common/exception/ResourceConflictException.class
 com/musicpod/catalog/track/UpdateTrackRequest.class
 com/musicpod/library/playlist/PlaylistTrackId.class
+com/musicpod/playback/PlaybackController.class
 com/musicpod/auth/PasswordConfig.class
 com/musicpod/auth/TokenService.class
 com/musicpod/security/SecurityConfig.class
 com/musicpod/catalog/album/AlbumService.class
 com/musicpod/catalog/artist/ArtistService.class
 com/musicpod/user/UserResponse.class
+com/musicpod/playback/PlaybackEventResponse.class
+com/musicpod/playback/PlaybackEvent.class
 com/musicpod/library/likedtrack/LikedTrackController.class
 com/musicpod/catalog/track/CreateTrackRequest.class
 com/musicpod/library/playlist/PlaylistController.class
@@ -39,6 +43,7 @@ com/musicpod/catalog/track/TrackResponse.class
 com/musicpod/catalog/artist/ArtistRepository.class
 com/musicpod/catalog/track/Track.class
 com/musicpod/catalog/artist/ArtistController.class
+com/musicpod/playback/PlaybackService.class
 com/musicpod/catalog/album/UpdateAlbumRequest.class
 com/musicpod/library/playlist/PlaylistResponse.class
 com/musicpod/common/exception/ResourceNotFoundException.class
@@ -56,5 +61,6 @@ com/musicpod/library/playlist/PlaylistTrack.class
 com/musicpod/library/playlist/PlaylistTrackResponse.class
 com/musicpod/user/UserService.class
 com/musicpod/user/MeController.class
+com/musicpod/playback/RecordPlaybackRequest.class
 com/musicpod/auth/AuthService.class
 com/musicpod/common/exception/AuthenticationFailedException.class

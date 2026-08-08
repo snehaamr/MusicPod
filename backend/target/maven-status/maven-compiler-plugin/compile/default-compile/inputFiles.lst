@@ -52,6 +52,12 @@
 /Users/snehaavula/Projects/MusicPod/backend/src/main/java/com/musicpod/library/playlist/PlaylistTrackRepository.java
 /Users/snehaavula/Projects/MusicPod/backend/src/main/java/com/musicpod/library/playlist/PlaylistTrackResponse.java
 /Users/snehaavula/Projects/MusicPod/backend/src/main/java/com/musicpod/library/playlist/UpdatePlaylistRequest.java
+/Users/snehaavula/Projects/MusicPod/backend/src/main/java/com/musicpod/playback/PlaybackController.java
+/Users/snehaavula/Projects/MusicPod/backend/src/main/java/com/musicpod/playback/PlaybackEvent.java
+/Users/snehaavula/Projects/MusicPod/backend/src/main/java/com/musicpod/playback/PlaybackEventRepository.java
+/Users/snehaavula/Projects/MusicPod/backend/src/main/java/com/musicpod/playback/PlaybackEventResponse.java
+/Users/snehaavula/Projects/MusicPod/backend/src/main/java/com/musicpod/playback/PlaybackService.java
+/Users/snehaavula/Projects/MusicPod/backend/src/main/java/com/musicpod/playback/RecordPlaybackRequest.java
 /Users/snehaavula/Projects/MusicPod/backend/src/main/java/com/musicpod/security/SecurityConfig.java
 /Users/snehaavula/Projects/MusicPod/backend/src/main/java/com/musicpod/user/MeController.java
 /Users/snehaavula/Projects/MusicPod/backend/src/main/java/com/musicpod/user/UserAccount.java
