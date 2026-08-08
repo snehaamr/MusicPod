@@ -18,15 +18,19 @@ import jakarta.servlet.http.HttpServletRequest;
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
-    @ExceptionHandler(ResourceNotFoundException.class)
-    public ResponseEntity<ApiError> handleResourceNotFound(
-            ResourceNotFoundException exception,
-            HttpServletRequest request) {
+    @ExceptionHandler(
+            ResourceNotFoundException.class
+    )
+    public ResponseEntity<ApiError>
+            handleResourceNotFound(
+                    ResourceNotFoundException exception,
+                    HttpServletRequest request) {
 
         ApiError error = new ApiError(
                 Instant.now(),
                 HttpStatus.NOT_FOUND.value(),
-                HttpStatus.NOT_FOUND.getReasonPhrase(),
+                HttpStatus.NOT_FOUND
+                        .getReasonPhrase(),
                 exception.getMessage(),
                 request.getRequestURI(),
                 null
@@ -37,15 +41,19 @@ public class GlobalExceptionHandler {
                 .body(error);
     }
 
-    @ExceptionHandler(ResourceConflictException.class)
-    public ResponseEntity<ApiError> handleResourceConflict(
-            ResourceConflictException exception,
-            HttpServletRequest request) {
+    @ExceptionHandler(
+            ResourceConflictException.class
+    )
+    public ResponseEntity<ApiError>
+            handleResourceConflict(
+                    ResourceConflictException exception,
+                    HttpServletRequest request) {
 
         ApiError error = new ApiError(
                 Instant.now(),
                 HttpStatus.CONFLICT.value(),
-                HttpStatus.CONFLICT.getReasonPhrase(),
+                HttpStatus.CONFLICT
+                        .getReasonPhrase(),
                 exception.getMessage(),
                 request.getRequestURI(),
                 null
@@ -56,10 +64,36 @@ public class GlobalExceptionHandler {
                 .body(error);
     }
 
-    @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<ApiError> handleValidation(
-            MethodArgumentNotValidException exception,
-            HttpServletRequest request) {
+    @ExceptionHandler(
+            AuthenticationFailedException.class
+    )
+    public ResponseEntity<ApiError>
+            handleAuthenticationFailed(
+                    AuthenticationFailedException exception,
+                    HttpServletRequest request) {
+
+        ApiError error = new ApiError(
+                Instant.now(),
+                HttpStatus.UNAUTHORIZED.value(),
+                HttpStatus.UNAUTHORIZED
+                        .getReasonPhrase(),
+                exception.getMessage(),
+                request.getRequestURI(),
+                null
+        );
+
+        return ResponseEntity
+                .status(HttpStatus.UNAUTHORIZED)
+                .body(error);
+    }
+
+    @ExceptionHandler(
+            MethodArgumentNotValidException.class
+    )
+    public ResponseEntity<ApiError>
+            handleValidation(
+                    MethodArgumentNotValidException exception,
+                    HttpServletRequest request) {
 
         Map<String, String> fieldErrors =
                 new LinkedHashMap<>();
@@ -69,14 +103,16 @@ public class GlobalExceptionHandler {
                 .forEach(fieldError ->
                         fieldErrors.putIfAbsent(
                                 fieldError.getField(),
-                                fieldError.getDefaultMessage()
+                                fieldError
+                                        .getDefaultMessage()
                         )
                 );
 
         ApiError error = new ApiError(
                 Instant.now(),
                 HttpStatus.BAD_REQUEST.value(),
-                HttpStatus.BAD_REQUEST.getReasonPhrase(),
+                HttpStatus.BAD_REQUEST
+                        .getReasonPhrase(),
                 "Request validation failed",
                 request.getRequestURI(),
                 fieldErrors
@@ -87,15 +123,19 @@ public class GlobalExceptionHandler {
                 .body(error);
     }
 
-    @ExceptionHandler(IllegalArgumentException.class)
-    public ResponseEntity<ApiError> handleIllegalArgument(
-            IllegalArgumentException exception,
-            HttpServletRequest request) {
+    @ExceptionHandler(
+            IllegalArgumentException.class
+    )
+    public ResponseEntity<ApiError>
+            handleIllegalArgument(
+                    IllegalArgumentException exception,
+                    HttpServletRequest request) {
 
         ApiError error = new ApiError(
                 Instant.now(),
                 HttpStatus.BAD_REQUEST.value(),
-                HttpStatus.BAD_REQUEST.getReasonPhrase(),
+                HttpStatus.BAD_REQUEST
+                        .getReasonPhrase(),
                 exception.getMessage(),
                 request.getRequestURI(),
                 null
@@ -106,15 +146,19 @@ public class GlobalExceptionHandler {
                 .body(error);
     }
 
-    @ExceptionHandler(DataIntegrityViolationException.class)
-    public ResponseEntity<ApiError> handleDataIntegrityViolation(
-            DataIntegrityViolationException exception,
-            HttpServletRequest request) {
+    @ExceptionHandler(
+            DataIntegrityViolationException.class
+    )
+    public ResponseEntity<ApiError>
+            handleDataIntegrityViolation(
+                    DataIntegrityViolationException exception,
+                    HttpServletRequest request) {
 
         ApiError error = new ApiError(
                 Instant.now(),
                 HttpStatus.CONFLICT.value(),
-                HttpStatus.CONFLICT.getReasonPhrase(),
+                HttpStatus.CONFLICT
+                        .getReasonPhrase(),
                 "Request conflicts with existing data",
                 request.getRequestURI(),
                 null

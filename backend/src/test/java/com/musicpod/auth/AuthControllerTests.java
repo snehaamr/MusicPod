@@ -10,17 +10,20 @@ import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.http.MediaType;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.MvcResult;
 
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
+import com.jayway.jsonpath.JsonPath;
 import com.musicpod.user.UserAccount;
 import com.musicpod.user.UserRepository;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -34,7 +37,9 @@ class AuthControllerTests {
     @Container
     @ServiceConnection
     static final PostgreSQLContainer<?> postgres =
-            new PostgreSQLContainer<>("postgres:17-alpine")
+            new PostgreSQLContainer<>(
+                    "postgres:17-alpine"
+            )
                     .withDatabaseName("musicpod")
                     .withUsername("musicpod")
                     .withPassword("musicpod");
@@ -50,6 +55,7 @@ class AuthControllerTests {
 
     @BeforeEach
     void cleanDatabase() {
+
         userRepository.deleteAll();
     }
 
@@ -77,11 +83,15 @@ class AuthControllerTests {
         )
         .andExpect(
                 jsonPath("$.email")
-                        .value("listener@example.com")
+                        .value(
+                                "listener@example.com"
+                        )
         )
         .andExpect(
                 jsonPath("$.displayName")
-                        .value("Music Listener")
+                        .value(
+                                "Music Listener"
+                        )
         )
         .andExpect(
                 jsonPath("$.password")
@@ -100,8 +110,11 @@ class AuthControllerTests {
                         .orElseThrow();
 
         assertFalse(
-                savedUser.getPasswordHash()
-                        .equals("musicpod123!")
+                savedUser
+                        .getPasswordHash()
+                        .equals(
+                                "musicpod123!"
+                        )
         );
 
         assertTrue(
@@ -132,7 +145,9 @@ class AuthControllerTests {
         .andExpect(status().isCreated())
         .andExpect(
                 jsonPath("$.email")
-                        .value("listener@example.com")
+                        .value(
+                                "listener@example.com"
+                        )
         );
     }
 
@@ -140,18 +155,7 @@ class AuthControllerTests {
     void rejectsDuplicateEmailIgnoringCase()
             throws Exception {
 
-        String passwordHash =
-                passwordEncoder.encode(
-                        "existingPassword123!"
-                );
-
-        userRepository.save(
-                new UserAccount(
-                        "listener@example.com",
-                        passwordHash,
-                        "Existing Listener"
-                )
-        );
+        createUser();
 
         mockMvc.perform(
                 post("/api/v1/auth/register")
@@ -195,7 +199,9 @@ class AuthControllerTests {
         .andExpect(status().isBadRequest())
         .andExpect(
                 jsonPath("$.fieldErrors.email")
-                        .value("Email must be valid")
+                        .value(
+                                "Email must be valid"
+                        )
         )
         .andExpect(
                 jsonPath("$.fieldErrors.password")
@@ -205,7 +211,202 @@ class AuthControllerTests {
         )
         .andExpect(
                 jsonPath("$.fieldErrors.displayName")
-                        .value("Display name is required")
+                        .value(
+                                "Display name is required"
+                        )
+        );
+    }
+
+    @Test
+    void logsInWithValidCredentials()
+            throws Exception {
+
+        createUser();
+
+        mockMvc.perform(
+                post("/api/v1/auth/login")
+                        .contentType(
+                                MediaType.APPLICATION_JSON
+                        )
+                        .content("""
+                                {
+                                  "email": "listener@example.com",
+                                  "password": "musicpod123!"
+                                }
+                                """)
+        )
+        .andExpect(status().isOk())
+        .andExpect(
+                jsonPath("$.accessToken")
+                        .isNotEmpty()
+        )
+        .andExpect(
+                jsonPath("$.tokenType")
+                        .value("Bearer")
+        )
+        .andExpect(
+                jsonPath("$.expiresInSeconds")
+                        .value(3600)
+        )
+        .andExpect(
+                jsonPath("$.user.email")
+                        .value(
+                                "listener@example.com"
+                        )
+        );
+    }
+
+    @Test
+    void rejectsWrongPassword()
+            throws Exception {
+
+        createUser();
+
+        mockMvc.perform(
+                post("/api/v1/auth/login")
+                        .contentType(
+                                MediaType.APPLICATION_JSON
+                        )
+                        .content("""
+                                {
+                                  "email": "listener@example.com",
+                                  "password": "wrong-password"
+                                }
+                                """)
+        )
+        .andExpect(status().isUnauthorized())
+        .andExpect(
+                jsonPath("$.message")
+                        .value(
+                                "Invalid email or password"
+                        )
+        );
+    }
+
+    @Test
+    void rejectsUnknownEmail()
+            throws Exception {
+
+        mockMvc.perform(
+                post("/api/v1/auth/login")
+                        .contentType(
+                                MediaType.APPLICATION_JSON
+                        )
+                        .content("""
+                                {
+                                  "email": "unknown@example.com",
+                                  "password": "musicpod123!"
+                                }
+                                """)
+        )
+        .andExpect(status().isUnauthorized())
+        .andExpect(
+                jsonPath("$.message")
+                        .value(
+                                "Invalid email or password"
+                        )
+        );
+    }
+
+    @Test
+    void meRequiresAuthentication()
+            throws Exception {
+
+        mockMvc.perform(
+                get("/api/v1/me")
+        )
+        .andExpect(
+                status().isUnauthorized()
+        );
+    }
+
+    @Test
+    void loginTokenCanAccessMe()
+            throws Exception {
+
+        createUser();
+
+        MvcResult loginResult =
+                mockMvc.perform(
+                        post("/api/v1/auth/login")
+                                .contentType(
+                                        MediaType.APPLICATION_JSON
+                                )
+                                .content("""
+                                        {
+                                          "email": "listener@example.com",
+                                          "password": "musicpod123!"
+                                        }
+                                        """)
+                )
+                .andExpect(
+                        status().isOk()
+                )
+                .andReturn();
+
+        String responseBody =
+                loginResult
+                        .getResponse()
+                        .getContentAsString();
+
+        String accessToken =
+                JsonPath.read(
+                        responseBody,
+                        "$.accessToken"
+                );
+
+        mockMvc.perform(
+                get("/api/v1/me")
+                        .header(
+                                "Authorization",
+                                "Bearer "
+                                        + accessToken
+                        )
+        )
+        .andExpect(status().isOk())
+        .andExpect(
+                jsonPath("$.email")
+                        .value(
+                                "listener@example.com"
+                        )
+        )
+        .andExpect(
+                jsonPath("$.displayName")
+                        .value(
+                                "Music Listener"
+                        )
+        );
+    }
+
+    @Test
+    void rejectsInvalidBearerToken()
+            throws Exception {
+
+        mockMvc.perform(
+                get("/api/v1/me")
+                        .header(
+                                "Authorization",
+                                "Bearer not-a-real-jwt"
+                        )
+        )
+        .andExpect(
+                status().isUnauthorized()
+        );
+    }
+
+    private UserAccount createUser() {
+
+        String passwordHash =
+                passwordEncoder.encode(
+                        "musicpod123!"
+                );
+
+        return userRepository.save(
+                new UserAccount(
+                        "listener@example.com",
+                        passwordHash,
+                        "Music Listener"
+                )
         );
     }
 }

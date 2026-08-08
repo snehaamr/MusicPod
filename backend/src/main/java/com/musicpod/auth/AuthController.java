@@ -19,13 +19,18 @@ public class AuthController {
 
     private final AuthService authService;
 
-    public AuthController(AuthService authService) {
+    public AuthController(
+            AuthService authService) {
+
         this.authService = authService;
     }
 
     @PostMapping("/register")
     public ResponseEntity<UserResponse> register(
-            @Valid @RequestBody RegisterRequest request,
+            @Valid
+            @RequestBody
+            RegisterRequest request,
+
             UriComponentsBuilder uriBuilder) {
 
         UserResponse user =
@@ -39,5 +44,14 @@ public class AuthController {
         return ResponseEntity
                 .created(location)
                 .body(user);
+    }
+
+    @PostMapping("/login")
+    public LoginResponse login(
+            @Valid
+            @RequestBody
+            LoginRequest request) {
+
+        return authService.login(request);
     }
 }

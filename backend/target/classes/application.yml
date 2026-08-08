@@ -37,3 +37,9 @@ management:
     health:
       probes:
         enabled: true
+
+app:
+  jwt:
+    issuer: ${JWT_ISSUER:musicpod}
+    secret: ${JWT_SECRET:musicpod-local-development-jwt-secret-change-me-before-production-2026}
+    access-token-ttl: ${JWT_ACCESS_TOKEN_TTL:PT1H}

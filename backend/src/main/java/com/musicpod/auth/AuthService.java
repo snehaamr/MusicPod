@@ -7,6 +7,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.musicpod.common.exception.AuthenticationFailedException;
 import com.musicpod.common.exception.ResourceConflictException;
 import com.musicpod.user.UserAccount;
 import com.musicpod.user.UserRepository;
@@ -17,13 +18,16 @@ public class AuthService {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+    private final TokenService tokenService;
 
     public AuthService(
             UserRepository userRepository,
-            PasswordEncoder passwordEncoder) {
+            PasswordEncoder passwordEncoder,
+            TokenService tokenService) {
 
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
+        this.tokenService = tokenService;
     }
 
     @Transactional
@@ -34,7 +38,9 @@ public class AuthService {
                 normalizeEmail(request.email());
 
         if (userRepository
-                .existsByEmailIgnoreCase(normalizedEmail)) {
+                .existsByEmailIgnoreCase(
+                        normalizedEmail
+                )) {
 
             throw duplicateEmailException();
         }
@@ -44,37 +50,73 @@ public class AuthService {
                         request.password()
                 );
 
-        UserAccount user = new UserAccount(
-                normalizedEmail,
-                passwordHash,
-                request.displayName().trim()
-        );
+        UserAccount user =
+                new UserAccount(
+                        normalizedEmail,
+                        passwordHash,
+                        request.displayName().trim()
+                );
 
         try {
 
             UserAccount savedUser =
-                    userRepository.saveAndFlush(user);
+                    userRepository
+                            .saveAndFlush(user);
 
-            return UserResponse.from(savedUser);
+            return UserResponse.from(
+                    savedUser
+            );
 
-        } catch (DataIntegrityViolationException exception) {
-
-            /*
-             * The exists check above improves the common-case
-             * error message, but it cannot eliminate races.
-             *
-             * Two concurrent registrations could both check
-             * before either inserts.
-             *
-             * PostgreSQL's unique index remains the final
-             * correctness boundary.
-             */
+        } catch (
+                DataIntegrityViolationException exception
+        ) {
 
             throw duplicateEmailException();
         }
     }
 
-    private String normalizeEmail(String email) {
+    @Transactional(readOnly = true)
+    public LoginResponse login(
+            LoginRequest request) {
+
+        String normalizedEmail =
+                normalizeEmail(request.email());
+
+        UserAccount user =
+                userRepository
+                        .findByEmailIgnoreCase(
+                                normalizedEmail
+                        )
+                        .orElseThrow(
+                                this::invalidCredentialsException
+                        );
+
+        boolean passwordMatches =
+                passwordEncoder.matches(
+                        request.password(),
+                        user.getPasswordHash()
+                );
+
+        if (!passwordMatches) {
+
+            throw invalidCredentialsException();
+        }
+
+        String accessToken =
+                tokenService
+                        .createAccessToken(user);
+
+        return new LoginResponse(
+                accessToken,
+                "Bearer",
+                tokenService
+                        .getAccessTokenTtlSeconds(),
+                UserResponse.from(user)
+        );
+    }
+
+    private String normalizeEmail(
+            String email) {
 
         return email
                 .trim()
@@ -86,6 +128,14 @@ public class AuthService {
 
         return new ResourceConflictException(
                 "An account with this email already exists"
+        );
+    }
+
+    private AuthenticationFailedException
+            invalidCredentialsException() {
+
+        return new AuthenticationFailedException(
+                "Invalid email or password"
         );
     }
 }

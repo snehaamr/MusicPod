@@ -1,8 +1,13 @@
 /Users/snehaavula/Projects/MusicPod/backend/src/main/java/com/musicpod/MusicPodApplication.java
 /Users/snehaavula/Projects/MusicPod/backend/src/main/java/com/musicpod/auth/AuthController.java
 /Users/snehaavula/Projects/MusicPod/backend/src/main/java/com/musicpod/auth/AuthService.java
+/Users/snehaavula/Projects/MusicPod/backend/src/main/java/com/musicpod/auth/JwtConfig.java
+/Users/snehaavula/Projects/MusicPod/backend/src/main/java/com/musicpod/auth/JwtProperties.java
+/Users/snehaavula/Projects/MusicPod/backend/src/main/java/com/musicpod/auth/LoginRequest.java
+/Users/snehaavula/Projects/MusicPod/backend/src/main/java/com/musicpod/auth/LoginResponse.java
 /Users/snehaavula/Projects/MusicPod/backend/src/main/java/com/musicpod/auth/PasswordConfig.java
 /Users/snehaavula/Projects/MusicPod/backend/src/main/java/com/musicpod/auth/RegisterRequest.java
+/Users/snehaavula/Projects/MusicPod/backend/src/main/java/com/musicpod/auth/TokenService.java
 /Users/snehaavula/Projects/MusicPod/backend/src/main/java/com/musicpod/catalog/album/Album.java
 /Users/snehaavula/Projects/MusicPod/backend/src/main/java/com/musicpod/catalog/album/AlbumController.java
 /Users/snehaavula/Projects/MusicPod/backend/src/main/java/com/musicpod/catalog/album/AlbumRepository.java
@@ -26,9 +31,13 @@
 /Users/snehaavula/Projects/MusicPod/backend/src/main/java/com/musicpod/catalog/track/UpdateTrackRequest.java
 /Users/snehaavula/Projects/MusicPod/backend/src/main/java/com/musicpod/common/api/ApiError.java
 /Users/snehaavula/Projects/MusicPod/backend/src/main/java/com/musicpod/common/api/PageResponse.java
+/Users/snehaavula/Projects/MusicPod/backend/src/main/java/com/musicpod/common/exception/AuthenticationFailedException.java
 /Users/snehaavula/Projects/MusicPod/backend/src/main/java/com/musicpod/common/exception/GlobalExceptionHandler.java
 /Users/snehaavula/Projects/MusicPod/backend/src/main/java/com/musicpod/common/exception/ResourceConflictException.java
 /Users/snehaavula/Projects/MusicPod/backend/src/main/java/com/musicpod/common/exception/ResourceNotFoundException.java
+/Users/snehaavula/Projects/MusicPod/backend/src/main/java/com/musicpod/security/SecurityConfig.java
+/Users/snehaavula/Projects/MusicPod/backend/src/main/java/com/musicpod/user/MeController.java
 /Users/snehaavula/Projects/MusicPod/backend/src/main/java/com/musicpod/user/UserAccount.java
 /Users/snehaavula/Projects/MusicPod/backend/src/main/java/com/musicpod/user/UserRepository.java
 /Users/snehaavula/Projects/MusicPod/backend/src/main/java/com/musicpod/user/UserResponse.java
+/Users/snehaavula/Projects/MusicPod/backend/src/main/java/com/musicpod/user/UserService.java
