@@ -35,6 +35,12 @@
 /Users/snehaavula/Projects/MusicPod/backend/src/main/java/com/musicpod/common/exception/GlobalExceptionHandler.java
 /Users/snehaavula/Projects/MusicPod/backend/src/main/java/com/musicpod/common/exception/ResourceConflictException.java
 /Users/snehaavula/Projects/MusicPod/backend/src/main/java/com/musicpod/common/exception/ResourceNotFoundException.java
+/Users/snehaavula/Projects/MusicPod/backend/src/main/java/com/musicpod/library/likedtrack/LikedTrack.java
+/Users/snehaavula/Projects/MusicPod/backend/src/main/java/com/musicpod/library/likedtrack/LikedTrackController.java
+/Users/snehaavula/Projects/MusicPod/backend/src/main/java/com/musicpod/library/likedtrack/LikedTrackId.java
+/Users/snehaavula/Projects/MusicPod/backend/src/main/java/com/musicpod/library/likedtrack/LikedTrackRepository.java
+/Users/snehaavula/Projects/MusicPod/backend/src/main/java/com/musicpod/library/likedtrack/LikedTrackResponse.java
+/Users/snehaavula/Projects/MusicPod/backend/src/main/java/com/musicpod/library/likedtrack/LikedTrackService.java
 /Users/snehaavula/Projects/MusicPod/backend/src/main/java/com/musicpod/security/SecurityConfig.java
 /Users/snehaavula/Projects/MusicPod/backend/src/main/java/com/musicpod/user/MeController.java
 /Users/snehaavula/Projects/MusicPod/backend/src/main/java/com/musicpod/user/UserAccount.java
