@@ -16,6 +16,11 @@ import com.musicpod.common.api.PageResponse;
 import com.musicpod.common.exception.ResourceConflictException;
 import com.musicpod.common.exception.ResourceNotFoundException;
 
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
+
+import com.musicpod.config.CacheNames;
+
 @Service
 public class TrackService {
 
@@ -70,9 +75,22 @@ public class TrackService {
     }
 
     @Transactional(readOnly = true)
-    public TrackResponse getById(UUID trackId) {
+    @Cacheable(
+            cacheNames = CacheNames.TRACKS,
+            key = "#trackId"
+    )
+    public TrackResponse getById(
+            UUID trackId) {
 
-        Track track = findTrack(trackId);
+        Track track =
+                trackRepository
+                        .findById(trackId)
+                        .orElseThrow(
+                                () ->
+                                        new ResourceNotFoundException(
+                                                "Track not found"
+                                        )
+                        );
 
         return TrackResponse.from(track);
     }
@@ -112,6 +130,10 @@ public class TrackService {
     }
 
     @Transactional
+    @CacheEvict(
+            cacheNames = CacheNames.TRACKS,
+            key = "#trackId"
+    )
     public TrackResponse update(
             UUID trackId,
             UpdateTrackRequest request) {
@@ -150,6 +172,10 @@ public class TrackService {
     }
 
     @Transactional
+    @CacheEvict(
+            cacheNames = CacheNames.TRACKS,
+            key = "#trackId"
+    )
     public void delete(UUID trackId) {
 
         Track track = findTrack(trackId);
@@ -178,6 +204,7 @@ public class TrackService {
                         )
                 );
     }
+    
 
     private void ensureTrackNumberAvailable(
             UUID albumId,
