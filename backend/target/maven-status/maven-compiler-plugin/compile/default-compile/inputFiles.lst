@@ -1,4 +1,8 @@
 /Users/snehaavula/Projects/MusicPod/backend/src/main/java/com/musicpod/MusicPodApplication.java
+/Users/snehaavula/Projects/MusicPod/backend/src/main/java/com/musicpod/auth/AuthController.java
+/Users/snehaavula/Projects/MusicPod/backend/src/main/java/com/musicpod/auth/AuthService.java
+/Users/snehaavula/Projects/MusicPod/backend/src/main/java/com/musicpod/auth/PasswordConfig.java
+/Users/snehaavula/Projects/MusicPod/backend/src/main/java/com/musicpod/auth/RegisterRequest.java
 /Users/snehaavula/Projects/MusicPod/backend/src/main/java/com/musicpod/catalog/album/Album.java
 /Users/snehaavula/Projects/MusicPod/backend/src/main/java/com/musicpod/catalog/album/AlbumController.java
 /Users/snehaavula/Projects/MusicPod/backend/src/main/java/com/musicpod/catalog/album/AlbumRepository.java
@@ -25,3 +29,6 @@
 /Users/snehaavula/Projects/MusicPod/backend/src/main/java/com/musicpod/common/exception/GlobalExceptionHandler.java
 /Users/snehaavula/Projects/MusicPod/backend/src/main/java/com/musicpod/common/exception/ResourceConflictException.java
 /Users/snehaavula/Projects/MusicPod/backend/src/main/java/com/musicpod/common/exception/ResourceNotFoundException.java
+/Users/snehaavula/Projects/MusicPod/backend/src/main/java/com/musicpod/user/UserAccount.java
+/Users/snehaavula/Projects/MusicPod/backend/src/main/java/com/musicpod/user/UserRepository.java
+/Users/snehaavula/Projects/MusicPod/backend/src/main/java/com/musicpod/user/UserResponse.java

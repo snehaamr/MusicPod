@@ -1,4 +1,5 @@
 /Users/snehaavula/Projects/MusicPod/backend/src/test/java/com/musicpod/MusicPodApplicationTests.java
+/Users/snehaavula/Projects/MusicPod/backend/src/test/java/com/musicpod/auth/AuthControllerTests.java
 /Users/snehaavula/Projects/MusicPod/backend/src/test/java/com/musicpod/catalog/album/AlbumControllerTests.java
 /Users/snehaavula/Projects/MusicPod/backend/src/test/java/com/musicpod/catalog/artist/ArtistControllerTests.java
 /Users/snehaavula/Projects/MusicPod/backend/src/test/java/com/musicpod/catalog/track/TrackControllerTests.java

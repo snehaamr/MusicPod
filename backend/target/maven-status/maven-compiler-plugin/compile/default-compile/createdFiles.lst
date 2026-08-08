@@ -4,6 +4,7 @@ com/musicpod/common/exception/GlobalExceptionHandler.class
 com/musicpod/MusicPodApplication.class
 com/musicpod/catalog/track/TrackService.class
 com/musicpod/catalog/artist/UpdateArtistRequest.class
+com/musicpod/user/UserAccount.class
 com/musicpod/catalog/track/TrackController.class
 com/musicpod/catalog/album/Album.class
 com/musicpod/catalog/track/TrackResponse.class
@@ -14,10 +15,14 @@ com/musicpod/catalog/album/AlbumController.class
 com/musicpod/catalog/artist/ArtistController.class
 com/musicpod/catalog/artist/Artist.class
 com/musicpod/catalog/album/UpdateAlbumRequest.class
+com/musicpod/auth/AuthController.class
+com/musicpod/user/UserRepository.class
 com/musicpod/catalog/artist/CreateArtistRequest.class
 com/musicpod/common/exception/ResourceNotFoundException.class
 com/musicpod/common/exception/ResourceConflictException.class
 com/musicpod/catalog/track/UpdateTrackRequest.class
+com/musicpod/auth/RegisterRequest.class
+com/musicpod/auth/PasswordConfig.class
 com/musicpod/catalog/track/TrackRepository.class
 com/musicpod/catalog/album/AlbumResponse.class
 com/musicpod/catalog/artist/ArtistResponse.class
@@ -25,3 +30,5 @@ com/musicpod/common/api/PageResponse.class
 com/musicpod/catalog/album/AlbumService.class
 com/musicpod/catalog/artist/ArtistService.class
 com/musicpod/common/api/ApiError.class
+com/musicpod/user/UserResponse.class
+com/musicpod/auth/AuthService.class

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<testsuite xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://maven.apache.org/surefire/maven-surefire-plugin/xsd/surefire-test-report.xsd" version="3.0.2" name="com.musicpod.MusicPodApplicationTests" time="4.951" tests="3" errors="0" skipped="0" failures="0" flakes="0">
+<testsuite xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://maven.apache.org/surefire/maven-surefire-plugin/xsd/surefire-test-report.xsd" version="3.0.2" name="com.musicpod.auth.AuthControllerTests" time="2.378" tests="4" errors="0" skipped="0" failures="0" flakes="0">
   <properties>
     <property name="java.specification.version" value="25"/>
     <property name="sun.jnu.encoding" value="UTF-8"/>
@@ -50,7 +50,7 @@
     <property name="localRepository" value="/Users/snehaavula/.m2/repository"/>
     <property name="java.vendor.url.bug" value="https://github.com/Homebrew/homebrew-core/issues"/>
     <property name="java.io.tmpdir" value="/var/folders/6c/s8vg98bn3r1bcn33vqg4hgn00000gn/T/"/>
-    <property name="com.zaxxer.hikari.pool_number" value="1"/>
+    <property name="com.zaxxer.hikari.pool_number" value="2"/>
     <property name="java.version" value="25.0.4"/>
     <property name="user.dir" value="/Users/snehaavula/Projects/MusicPod/backend"/>
     <property name="os.arch" value="aarch64"/>
@@ -69,35 +69,15 @@
     <property name="java.class.version" value="69.0"/>
     <property name="LOGGED_APPLICATION_NAME" value="[musicpod-backend] "/>
   </properties>
-  <testcase name="flywayBaselineMigrationWasApplied" classname="com.musicpod.MusicPodApplicationTests" time="0.281">
-    <system-out><![CDATA[01:37:19.930 [main] INFO org.testcontainers.images.PullPolicy -- Image pull policy will be performed by: DefaultPullPolicy()
-01:37:19.933 [main] INFO org.testcontainers.utility.ImageNameSubstitutor -- Image name substitution will be performed by: DefaultImageNameSubstitutor (composite of 'ConfigurationFileImageNameSubstitutor' and 'PrefixingImageNameSubstitutor')
-01:37:19.945 [main] INFO org.testcontainers.DockerClientFactory -- Testcontainers version: 2.0.5
-01:37:20.051 [main] INFO org.testcontainers.dockerclient.DockerClientProviderStrategy -- Loaded org.testcontainers.dockerclient.UnixSocketClientProviderStrategy from ~/.testcontainers.properties, will try it first
-01:37:20.293 [main] INFO org.testcontainers.dockerclient.DockerClientProviderStrategy -- Found Docker environment with local Unix socket (unix:///var/run/docker.sock)
-01:37:20.293 [main] INFO org.testcontainers.DockerClientFactory -- Docker host IP address is localhost
-01:37:20.306 [main] INFO org.testcontainers.DockerClientFactory -- Connected to docker: 
-  Server Version: 29.6.2
-  API Version: 1.55
-  Operating System: Docker Desktop
-  Total Memory: 3918 MB
-  Labels: 
-    com.docker.desktop.address=unix:///Users/snehaavula/Library/Containers/com.docker.docker/Data/docker-cli.sock
-01:37:20.356 [main] INFO tc.testcontainers/ryuk:0.14.0 -- Creating container for image: testcontainers/ryuk:0.14.0
-01:37:20.455 [main] INFO org.testcontainers.utility.RegistryAuthLocator -- Credential helper/store (docker-credential-desktop) does not have credentials for https://index.docker.io/v1/
-01:37:20.564 [main] INFO tc.testcontainers/ryuk:0.14.0 -- Container testcontainers/ryuk:0.14.0 is starting: 1c3faea58ba4f230a438b5cd4bdbdfd3a200e39353feea89f399e513f8ddd1a7
-01:37:20.800 [main] INFO tc.testcontainers/ryuk:0.14.0 -- Container testcontainers/ryuk:0.14.0 started in PT0.443883S
-01:37:20.805 [main] INFO org.testcontainers.utility.RyukResourceReaper -- Ryuk started - will monitor and terminate Testcontainers containers on JVM exit
-01:37:20.805 [main] INFO org.testcontainers.DockerClientFactory -- Checking the system...
-01:37:20.805 [main] INFO org.testcontainers.DockerClientFactory -- ✔︎ Docker server version should be at least 1.6.0
-01:37:20.805 [main] INFO tc.postgres:17-alpine -- Creating container for image: postgres:17-alpine
-01:37:20.869 [main] INFO tc.postgres:17-alpine -- Container postgres:17-alpine is starting: bd5de6ff0fd6a35b2ee2d83660e51e23e322b15103615edee5c645ad69817ede
-01:37:21.855 [main] INFO tc.postgres:17-alpine -- Container postgres:17-alpine started in PT1.04932S
-01:37:21.857 [main] INFO tc.postgres:17-alpine -- Container is started (JDBC URL: jdbc:postgresql://localhost:51748/musicpod?loggerLevel=OFF)
-01:37:21.930 [main] INFO org.springframework.test.context.support.AnnotationConfigContextLoaderUtils -- Could not detect default configuration classes for test class [com.musicpod.MusicPodApplicationTests]: MusicPodApplicationTests does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
-01:37:21.996 [main] INFO org.springframework.boot.test.context.SpringBootTestContextBootstrapper -- Found @SpringBootConfiguration com.musicpod.MusicPodApplication for test class com.musicpod.MusicPodApplicationTests
-01:37:22.034 [main] INFO org.springframework.test.context.support.AnnotationConfigContextLoaderUtils -- Could not detect default configuration classes for test class [com.musicpod.MusicPodApplicationTests]: MusicPodApplicationTests does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
-01:37:22.037 [main] INFO org.springframework.boot.test.context.SpringBootTestContextBootstrapper -- Found @SpringBootConfiguration com.musicpod.MusicPodApplication for test class com.musicpod.MusicPodApplicationTests
+  <testcase name="rejectsInvalidRegistration" classname="com.musicpod.auth.AuthControllerTests" time="0.143">
+    <system-out><![CDATA[2026-08-08T01:37:24.821-04:00  INFO 81019 --- [musicpod-backend] [           main] tc.postgres:17-alpine                    : Creating container for image: postgres:17-alpine
+2026-08-08T01:37:24.917-04:00  INFO 81019 --- [musicpod-backend] [           main] tc.postgres:17-alpine                    : Container postgres:17-alpine is starting: 470390a75b802f13d1cb9f14c9f6b8ba9881ee2ccac4e51ff498480861bade0f
+2026-08-08T01:37:25.807-04:00  INFO 81019 --- [musicpod-backend] [           main] tc.postgres:17-alpine                    : Container postgres:17-alpine started in PT0.986133S
+2026-08-08T01:37:25.814-04:00  INFO 81019 --- [musicpod-backend] [           main] tc.postgres:17-alpine                    : Container is started (JDBC URL: jdbc:postgresql://localhost:51762/musicpod?loggerLevel=OFF)
+2026-08-08T01:37:25.820-04:00  INFO 81019 --- [musicpod-backend] [           main] t.c.s.AnnotationConfigContextLoaderUtils : Could not detect default configuration classes for test class [com.musicpod.auth.AuthControllerTests]: AuthControllerTests does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
+2026-08-08T01:37:25.850-04:00  INFO 81019 --- [musicpod-backend] [           main] .b.t.c.SpringBootTestContextBootstrapper : Found @SpringBootConfiguration com.musicpod.MusicPodApplication for test class com.musicpod.auth.AuthControllerTests
+2026-08-08T01:37:25.851-04:00  INFO 81019 --- [musicpod-backend] [           main] t.c.s.AnnotationConfigContextLoaderUtils : Could not detect default configuration classes for test class [com.musicpod.auth.AuthControllerTests]: AuthControllerTests does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
+2026-08-08T01:37:25.854-04:00  INFO 81019 --- [musicpod-backend] [           main] .b.t.c.SpringBootTestContextBootstrapper : Found @SpringBootConfiguration com.musicpod.MusicPodApplication for test class com.musicpod.auth.AuthControllerTests
 
   .   ____          _            __ _ _
  /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
@@ -108,33 +88,32 @@
 
  :: Spring Boot ::                (v4.1.0)
 
-2026-08-08T01:37:22.172-04:00  INFO 81019 --- [musicpod-backend] [           main] com.musicpod.MusicPodApplicationTests    : Starting MusicPodApplicationTests using Java 25.0.4 with PID 81019 (started by snehaavula in /Users/snehaavula/Projects/MusicPod/backend)
-2026-08-08T01:37:22.173-04:00  INFO 81019 --- [musicpod-backend] [           main] com.musicpod.MusicPodApplicationTests    : No active profile set, falling back to 1 default profile: "default"
-2026-08-08T01:37:22.519-04:00  INFO 81019 --- [musicpod-backend] [           main] .s.d.r.c.RepositoryConfigurationDelegate : Bootstrapping Spring Data JPA repositories in DEFAULT mode.
-2026-08-08T01:37:22.543-04:00  INFO 81019 --- [musicpod-backend] [           main] .s.d.r.c.RepositoryConfigurationDelegate : Finished Spring Data repository scanning in 19 ms. Found 4 JPA repository interfaces.
-2026-08-08T01:37:22.937-04:00  INFO 81019 --- [musicpod-backend] [           main] org.flywaydb.core.FlywayExecutor         : Database: jdbc:postgresql://localhost:51748/musicpod?loggerLevel=OFF (PostgreSQL 17.10)
-2026-08-08T01:37:22.964-04:00  INFO 81019 --- [musicpod-backend] [           main] o.f.c.i.s.JdbcTableSchemaHistory         : Schema history table "public"."flyway_schema_history" does not exist yet
-2026-08-08T01:37:22.965-04:00  INFO 81019 --- [musicpod-backend] [           main] o.f.core.internal.command.DbValidate     : Successfully validated 3 migrations (execution time 00:00.006s)
-2026-08-08T01:37:22.975-04:00  INFO 81019 --- [musicpod-backend] [           main] o.f.c.i.s.JdbcTableSchemaHistory         : Creating Schema History table "public"."flyway_schema_history" ...
-2026-08-08T01:37:23.004-04:00  INFO 81019 --- [musicpod-backend] [           main] o.f.core.internal.command.DbMigrate      : Current version of schema "public": << Empty Schema >>
-2026-08-08T01:37:23.007-04:00  INFO 81019 --- [musicpod-backend] [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "public" to version "1 - baseline"
-2026-08-08T01:37:23.008-04:00  INFO 81019 --- [musicpod-backend] [           main] o.f.c.i.s.DefaultSqlScriptExecutor       : +----------+
+2026-08-08T01:37:25.886-04:00  INFO 81019 --- [musicpod-backend] [           main] com.musicpod.auth.AuthControllerTests    : Starting AuthControllerTests using Java 25.0.4 with PID 81019 (started by snehaavula in /Users/snehaavula/Projects/MusicPod/backend)
+2026-08-08T01:37:25.887-04:00  INFO 81019 --- [musicpod-backend] [           main] com.musicpod.auth.AuthControllerTests    : No active profile set, falling back to 1 default profile: "default"
+2026-08-08T01:37:25.982-04:00  INFO 81019 --- [musicpod-backend] [           main] .s.d.r.c.RepositoryConfigurationDelegate : Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+2026-08-08T01:37:25.988-04:00  INFO 81019 --- [musicpod-backend] [           main] .s.d.r.c.RepositoryConfigurationDelegate : Finished Spring Data repository scanning in 4 ms. Found 4 JPA repository interfaces.
+2026-08-08T01:37:26.135-04:00  INFO 81019 --- [musicpod-backend] [           main] org.flywaydb.core.FlywayExecutor         : Database: jdbc:postgresql://localhost:51762/musicpod?loggerLevel=OFF (PostgreSQL 17.10)
+2026-08-08T01:37:26.143-04:00  INFO 81019 --- [musicpod-backend] [           main] o.f.c.i.s.JdbcTableSchemaHistory         : Schema history table "public"."flyway_schema_history" does not exist yet
+2026-08-08T01:37:26.144-04:00  INFO 81019 --- [musicpod-backend] [           main] o.f.core.internal.command.DbValidate     : Successfully validated 3 migrations (execution time 00:00.002s)
+2026-08-08T01:37:26.149-04:00  INFO 81019 --- [musicpod-backend] [           main] o.f.c.i.s.JdbcTableSchemaHistory         : Creating Schema History table "public"."flyway_schema_history" ...
+2026-08-08T01:37:26.162-04:00  INFO 81019 --- [musicpod-backend] [           main] o.f.core.internal.command.DbMigrate      : Current version of schema "public": << Empty Schema >>
+2026-08-08T01:37:26.163-04:00  INFO 81019 --- [musicpod-backend] [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "public" to version "1 - baseline"
+2026-08-08T01:37:26.163-04:00  INFO 81019 --- [musicpod-backend] [           main] o.f.c.i.s.DefaultSqlScriptExecutor       : +----------+
 | ?column? |
 +----------+
 | 1        |
 +----------+
 
-2026-08-08T01:37:23.017-04:00  INFO 81019 --- [musicpod-backend] [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "public" to version "2 - create catalog tables"
-2026-08-08T01:37:23.029-04:00  INFO 81019 --- [musicpod-backend] [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "public" to version "3 - create users table"
-2026-08-08T01:37:23.036-04:00  INFO 81019 --- [musicpod-backend] [           main] o.f.core.internal.command.DbMigrate      : Successfully applied 3 migrations to schema "public", now at version v3 (execution time 00:00.012s)
-2026-08-08T01:37:23.084-04:00  INFO 81019 --- [musicpod-backend] [           main] org.hibernate.orm.jpa                    : HHH008540: Processing PersistenceUnitInfo [name: default]
-2026-08-08T01:37:23.119-04:00  INFO 81019 --- [musicpod-backend] [           main] org.hibernate.orm.core                   : HHH000001: Hibernate ORM core version 7.4.1.Final
-2026-08-08T01:37:23.277-04:00  INFO 81019 --- [musicpod-backend] [           main] o.s.o.j.p.SpringPersistenceUnitInfo      : No LoadTimeWeaver setup: ignoring JPA class transformer
-2026-08-08T01:37:23.291-04:00  INFO 81019 --- [musicpod-backend] [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Starting...
-2026-08-08T01:37:23.305-04:00  INFO 81019 --- [musicpod-backend] [           main] com.zaxxer.hikari.pool.HikariPool        : HikariPool-1 - Added connection org.postgresql.jdbc.PgConnection@542c6165
-2026-08-08T01:37:23.306-04:00  INFO 81019 --- [musicpod-backend] [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Start completed.
-2026-08-08T01:37:23.338-04:00  INFO 81019 --- [musicpod-backend] [           main] org.hibernate.orm.connections.pooling    : HHH10001005: Database info:
-	Database JDBC URL [jdbc:postgresql://localhost:51748/musicpod?loggerLevel=OFF]
+2026-08-08T01:37:26.168-04:00  INFO 81019 --- [musicpod-backend] [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "public" to version "2 - create catalog tables"
+2026-08-08T01:37:26.179-04:00  INFO 81019 --- [musicpod-backend] [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "public" to version "3 - create users table"
+2026-08-08T01:37:26.183-04:00  INFO 81019 --- [musicpod-backend] [           main] o.f.core.internal.command.DbMigrate      : Successfully applied 3 migrations to schema "public", now at version v3 (execution time 00:00.010s)
+2026-08-08T01:37:26.190-04:00  INFO 81019 --- [musicpod-backend] [           main] org.hibernate.orm.jpa                    : HHH008540: Processing PersistenceUnitInfo [name: default]
+2026-08-08T01:37:26.199-04:00  INFO 81019 --- [musicpod-backend] [           main] o.s.o.j.p.SpringPersistenceUnitInfo      : No LoadTimeWeaver setup: ignoring JPA class transformer
+2026-08-08T01:37:26.199-04:00  INFO 81019 --- [musicpod-backend] [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-2 - Starting...
+2026-08-08T01:37:26.204-04:00  INFO 81019 --- [musicpod-backend] [           main] com.zaxxer.hikari.pool.HikariPool        : HikariPool-2 - Added connection org.postgresql.jdbc.PgConnection@126688a7
+2026-08-08T01:37:26.204-04:00  INFO 81019 --- [musicpod-backend] [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-2 - Start completed.
+2026-08-08T01:37:26.207-04:00  INFO 81019 --- [musicpod-backend] [           main] org.hibernate.orm.connections.pooling    : HHH10001005: Database info:
+	Database JDBC URL [jdbc:postgresql://localhost:51762/musicpod?loggerLevel=OFF]
 	Database driver: PostgreSQL JDBC Driver
 	Database dialect: PostgreSQLDialect
 	Database version: 17.10
@@ -145,19 +124,16 @@
 	Pool: DataSourceConnectionProvider
 	Minimum pool size: undefined/unknown
 	Maximum pool size: undefined/unknown
-2026-08-08T01:37:23.705-04:00  INFO 81019 --- [musicpod-backend] [           main] org.hibernate.orm.core                   : HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
-2026-08-08T01:37:23.735-04:00  INFO 81019 --- [musicpod-backend] [           main] j.LocalContainerEntityManagerFactoryBean : Initialized JPA EntityManagerFactory for persistence unit 'default'
-2026-08-08T01:37:23.768-04:00  INFO 81019 --- [musicpod-backend] [           main] o.s.d.j.r.query.QueryEnhancerFactories   : Hibernate is in classpath; If applicable, HQL parser will be used.
-2026-08-08T01:37:24.182-04:00  INFO 81019 --- [musicpod-backend] [           main] o.s.b.a.e.web.EndpointLinksResolver      : Exposing 2 endpoints beneath base path '/actuator'
-2026-08-08T01:37:24.206-04:00  INFO 81019 --- [musicpod-backend] [           main] com.musicpod.MusicPodApplicationTests    : Started MusicPodApplicationTests in 2.136 seconds (process running for 4.661)
+2026-08-08T01:37:26.229-04:00  INFO 81019 --- [musicpod-backend] [           main] org.hibernate.orm.core                   : HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+2026-08-08T01:37:26.237-04:00  INFO 81019 --- [musicpod-backend] [           main] j.LocalContainerEntityManagerFactoryBean : Initialized JPA EntityManagerFactory for persistence unit 'default'
+2026-08-08T01:37:26.326-04:00  INFO 81019 --- [musicpod-backend] [           main] o.s.b.t.m.w.SpringBootMockServletContext : Initializing Spring TestDispatcherServlet ''
+2026-08-08T01:37:26.326-04:00  INFO 81019 --- [musicpod-backend] [           main] o.s.t.web.servlet.TestDispatcherServlet  : Initializing Servlet ''
+2026-08-08T01:37:26.327-04:00  INFO 81019 --- [musicpod-backend] [           main] o.s.b.a.e.web.EndpointLinksResolver      : Exposing 2 endpoints beneath base path '/actuator'
+2026-08-08T01:37:26.329-04:00  INFO 81019 --- [musicpod-backend] [           main] o.s.t.web.servlet.TestDispatcherServlet  : Completed initialization in 3 ms
+2026-08-08T01:37:26.339-04:00  INFO 81019 --- [musicpod-backend] [           main] com.musicpod.auth.AuthControllerTests    : Started AuthControllerTests in 0.477 seconds (process running for 6.794)
 ]]></system-out>
-    <system-err><![CDATA[Mockito is currently self-attaching to enable the inline-mock-maker. This will no longer work in future releases of the JDK. Please add Mockito as an agent to your build as described in Mockito's documentation: https://javadoc.io/doc/org.mockito/mockito-core/latest/org.mockito/org/mockito/Mockito.html#0.3
-WARNING: A Java agent has been loaded dynamically (/Users/snehaavula/.m2/repository/net/bytebuddy/byte-buddy-agent/1.18.10/byte-buddy-agent-1.18.10.jar)
-WARNING: If a serviceability tool is in use, please run with -XX:+EnableDynamicAgentLoading to hide this warning
-WARNING: If a serviceability tool is not in use, please run with -Djdk.instrument.traceUsage for more information
-WARNING: Dynamic loading of agents will be disallowed by default in a future release
-]]></system-err>
   </testcase>
-  <testcase name="applicationStartsAndConnectsToPostgres" classname="com.musicpod.MusicPodApplicationTests" time="0.002"/>
-  <testcase name="postgresContainerIsRunning" classname="com.musicpod.MusicPodApplicationTests" time="0.011"/>
+  <testcase name="normalizesEmailBeforeSaving" classname="com.musicpod.auth.AuthControllerTests" time="0.213"/>
+  <testcase name="rejectsDuplicateEmailIgnoringCase" classname="com.musicpod.auth.AuthControllerTests" time="0.087"/>
+  <testcase name="registersUserAndHashesPassword" classname="com.musicpod.auth.AuthControllerTests" time="0.15"/>
 </testsuite>
