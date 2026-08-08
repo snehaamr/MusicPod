@@ -1,5 +1,4 @@
 services:
-
   postgres:
     image: postgres:17-alpine
     container_name: musicpod-postgres
@@ -10,18 +9,31 @@ services:
       POSTGRES_PASSWORD: musicpod
 
     ports:
-      - "5432:5432"
+      - 5432:5432
 
     volumes:
       - musicpod_postgres_data:/var/lib/postgresql/data
 
     healthcheck:
       test:
-        [
-          "CMD-SHELL",
-          "pg_isready -U musicpod -d musicpod"
-        ]
+        - CMD-SHELL
+        - pg_isready -U musicpod -d musicpod
       interval: 5s
+      timeout: 5s
+      retries: 10
+
+  kafka:
+    image: apache/kafka:4.3.1
+    container_name: musicpod-kafka
+
+    ports:
+      - 9092:9092
+
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - /opt/kafka/bin/kafka-topics.sh --bootstrap-server localhost:9092 --list >/dev/null 2>&1
+      interval: 10s
       timeout: 5s
       retries: 10
 

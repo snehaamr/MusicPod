@@ -2,6 +2,7 @@ package com.musicpod.playback;
 
 import java.util.UUID;
 
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -12,6 +13,7 @@ import com.musicpod.catalog.track.Track;
 import com.musicpod.catalog.track.TrackRepository;
 import com.musicpod.common.api.PageResponse;
 import com.musicpod.common.exception.ResourceNotFoundException;
+import com.musicpod.messaging.event.PlaybackRecordedEvent;
 import com.musicpod.user.UserAccount;
 import com.musicpod.user.UserRepository;
 
@@ -29,10 +31,14 @@ public class PlaybackService {
     private final TrackRepository
             trackRepository;
 
+    private final ApplicationEventPublisher
+            applicationEventPublisher;
+
     public PlaybackService(
             PlaybackEventRepository playbackEventRepository,
             UserRepository userRepository,
-            TrackRepository trackRepository) {
+            TrackRepository trackRepository,
+            ApplicationEventPublisher applicationEventPublisher) {
 
         this.playbackEventRepository =
                 playbackEventRepository;
@@ -42,6 +48,9 @@ public class PlaybackService {
 
         this.trackRepository =
                 trackRepository;
+
+        this.applicationEventPublisher =
+                applicationEventPublisher;
     }
 
     @Transactional
@@ -69,9 +78,32 @@ public class PlaybackService {
                         request.playedMs()
                 );
 
+        /*
+         * Flush guarantees that:
+         *
+         * 1. the PlaybackEvent has its UUID,
+         * 2. @PrePersist populated playedAt,
+         * 3. PostgreSQL validated the row.
+         */
         PlaybackEvent savedEvent =
                 playbackEventRepository
-                        .save(event);
+                        .saveAndFlush(event);
+
+        PlaybackRecordedEvent recordedEvent =
+                PlaybackRecordedEvent.from(
+                        savedEvent
+                );
+
+        /*
+         * This does NOT publish directly to Kafka.
+         *
+         * It publishes an in-process Spring event.
+         * The Kafka publisher listens AFTER_COMMIT.
+         */
+        applicationEventPublisher
+                .publishEvent(
+                        recordedEvent
+                );
 
         return PlaybackEventResponse.from(
                 savedEvent
@@ -143,7 +175,8 @@ public class PlaybackService {
             int playedMs,
             Track track) {
 
-        if (playedMs > track.getDurationMs()) {
+        if (playedMs
+                > track.getDurationMs()) {
 
             throw new IllegalArgumentException(
                     "Played milliseconds must not exceed track duration"
