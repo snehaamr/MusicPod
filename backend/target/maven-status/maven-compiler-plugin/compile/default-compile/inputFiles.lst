@@ -1,4 +1,11 @@
 /Users/snehaavula/Projects/MusicPod/backend/src/main/java/com/musicpod/MusicPodApplication.java
+/Users/snehaavula/Projects/MusicPod/backend/src/main/java/com/musicpod/catalog/album/Album.java
+/Users/snehaavula/Projects/MusicPod/backend/src/main/java/com/musicpod/catalog/album/AlbumController.java
+/Users/snehaavula/Projects/MusicPod/backend/src/main/java/com/musicpod/catalog/album/AlbumRepository.java
+/Users/snehaavula/Projects/MusicPod/backend/src/main/java/com/musicpod/catalog/album/AlbumResponse.java
+/Users/snehaavula/Projects/MusicPod/backend/src/main/java/com/musicpod/catalog/album/AlbumService.java
+/Users/snehaavula/Projects/MusicPod/backend/src/main/java/com/musicpod/catalog/album/CreateAlbumRequest.java
+/Users/snehaavula/Projects/MusicPod/backend/src/main/java/com/musicpod/catalog/album/UpdateAlbumRequest.java
 /Users/snehaavula/Projects/MusicPod/backend/src/main/java/com/musicpod/catalog/artist/Artist.java
 /Users/snehaavula/Projects/MusicPod/backend/src/main/java/com/musicpod/catalog/artist/ArtistController.java
 /Users/snehaavula/Projects/MusicPod/backend/src/main/java/com/musicpod/catalog/artist/ArtistRepository.java
