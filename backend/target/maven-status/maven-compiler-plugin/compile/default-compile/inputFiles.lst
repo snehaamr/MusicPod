@@ -41,6 +41,17 @@
 /Users/snehaavula/Projects/MusicPod/backend/src/main/java/com/musicpod/library/likedtrack/LikedTrackRepository.java
 /Users/snehaavula/Projects/MusicPod/backend/src/main/java/com/musicpod/library/likedtrack/LikedTrackResponse.java
 /Users/snehaavula/Projects/MusicPod/backend/src/main/java/com/musicpod/library/likedtrack/LikedTrackService.java
+/Users/snehaavula/Projects/MusicPod/backend/src/main/java/com/musicpod/library/playlist/CreatePlaylistRequest.java
+/Users/snehaavula/Projects/MusicPod/backend/src/main/java/com/musicpod/library/playlist/Playlist.java
+/Users/snehaavula/Projects/MusicPod/backend/src/main/java/com/musicpod/library/playlist/PlaylistController.java
+/Users/snehaavula/Projects/MusicPod/backend/src/main/java/com/musicpod/library/playlist/PlaylistRepository.java
+/Users/snehaavula/Projects/MusicPod/backend/src/main/java/com/musicpod/library/playlist/PlaylistResponse.java
+/Users/snehaavula/Projects/MusicPod/backend/src/main/java/com/musicpod/library/playlist/PlaylistService.java
+/Users/snehaavula/Projects/MusicPod/backend/src/main/java/com/musicpod/library/playlist/PlaylistTrack.java
+/Users/snehaavula/Projects/MusicPod/backend/src/main/java/com/musicpod/library/playlist/PlaylistTrackId.java
+/Users/snehaavula/Projects/MusicPod/backend/src/main/java/com/musicpod/library/playlist/PlaylistTrackRepository.java
+/Users/snehaavula/Projects/MusicPod/backend/src/main/java/com/musicpod/library/playlist/PlaylistTrackResponse.java
+/Users/snehaavula/Projects/MusicPod/backend/src/main/java/com/musicpod/library/playlist/UpdatePlaylistRequest.java
 /Users/snehaavula/Projects/MusicPod/backend/src/main/java/com/musicpod/security/SecurityConfig.java
 /Users/snehaavula/Projects/MusicPod/backend/src/main/java/com/musicpod/user/MeController.java
 /Users/snehaavula/Projects/MusicPod/backend/src/main/java/com/musicpod/user/UserAccount.java

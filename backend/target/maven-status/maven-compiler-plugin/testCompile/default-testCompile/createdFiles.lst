@@ -1,5 +1,6 @@
 com/musicpod/catalog/album/AlbumControllerTests.class
 com/musicpod/MusicPodApplicationTests.class
 com/musicpod/catalog/track/TrackControllerTests.class
+com/musicpod/library/playlist/PlaylistControllerTests.class
 com/musicpod/catalog/artist/ArtistControllerTests.class
 com/musicpod/auth/AuthControllerTests.class
