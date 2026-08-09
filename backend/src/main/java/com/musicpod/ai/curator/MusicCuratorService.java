@@ -3,6 +3,19 @@ package com.musicpod.ai.curator;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Service;
+import java.util.UUID;
+
+import com.musicpod.ai.audit.AgentRunService;
+import com.musicpod.auth.CurrentUserProvider;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+
+import org.springframework.ai.tool.ToolCallback;
+
+import com.musicpod.ai.audit.AgentExecutionContext;
+import com.musicpod.ai.audit.AuditedToolCallback;
+import com.musicpod.ai.audit.AuditedToolsFactory;
 
 @Service
 @ConditionalOnProperty(
@@ -85,19 +98,18 @@ public class MusicCuratorService {
 
     private final ChatClient chatClient;
 
-    private final MusicCuratorTools curatorTools;
+    
+    private final CurrentUserProvider currentUserProvider;
 
-    private final PersonalizedCuratorTools
-            personalizedCuratorTools;
-
-    private final MusicCuratorWriteTools
-            writeTools;
+    private final AgentRunService agentRunService;
+    
+    private final CuratorToolProvider toolProvider;
 
     public MusicCuratorService(
             ChatClient.Builder chatClientBuilder,
-            MusicCuratorTools curatorTools,
-            PersonalizedCuratorTools personalizedCuratorTools,
-            MusicCuratorWriteTools writeTools) {
+            CurrentUserProvider currentUserProvider,
+            AgentRunService agentRunService,
+            CuratorToolProvider toolProvider) {
 
         this.chatClient =
                 chatClientBuilder
@@ -106,63 +118,96 @@ public class MusicCuratorService {
                         )
                         .build();
 
-        this.curatorTools =
-                curatorTools;
+        this.currentUserProvider =
+                currentUserProvider;
 
-        this.personalizedCuratorTools =
-                personalizedCuratorTools;
+        this.agentRunService =
+                agentRunService;
 
-        this.writeTools =
-                writeTools;
+        this.toolProvider =
+                toolProvider;
     }
 
     public CuratorResponse curate(
             CuratorRequest request) {
 
-        String content;
+        UUID userId =
+                currentUserProvider.userId();
 
-        if (request.allowWrite()) {
+        UUID runId =
+                agentRunService.start(
+                        userId,
+                        request.prompt(),
+                        request.allowWrite()
+                );
 
-            content =
-                    chatClient
-                            .prompt()
-                            .user(
-                                    request.prompt()
-                            )
-                            .tools(
-                                    curatorTools,
-                                    personalizedCuratorTools,
-                                    writeTools
-                            )
-                            .call()
-                            .content();
+        try {
 
-        } else {
+            AgentExecutionContext executionContext =
+                    new AgentExecutionContext(
+                            runId
+                    );
 
-            content =
-                    chatClient
-                            .prompt()
-                            .user(
-                                    request.prompt()
-                            )
-                            .tools(
-                                    curatorTools,
-                                    personalizedCuratorTools
-                            )
-                            .call()
-                            .content();
-        }
+            String content =
+                    executeCurator(
+                            request,
+                            executionContext
+                    );
 
-        if (content == null
-                || content.isBlank()) {
+            if (content == null
+                    || content.isBlank()) {
 
-            throw new IllegalStateException(
-                    "AI curator returned an empty response"
+                throw new IllegalStateException(
+                        "AI curator returned an empty response"
+                );
+            }
+
+            agentRunService.complete(
+                    runId,
+                    content
             );
-        }
 
-        return new CuratorResponse(
-                content
-        );
+            return new CuratorResponse(
+                    content
+            );
+
+        } catch (Exception exception) {
+
+            agentRunService.fail(
+                    runId,
+                    exception
+            );
+
+            throw exception;
+        }
     }
+    
+    private String executeCurator(
+            CuratorRequest request,
+            AgentExecutionContext executionContext) {
+
+        List<ToolCallback> tools =
+                toolProvider.toolsFor(
+                        request.allowWrite()
+                );
+
+        return chatClient
+                .prompt()
+                .user(
+                        request.prompt()
+                )
+                .tools(
+                        tools
+                )
+                .toolContext(
+                        Map.of(
+                                AuditedToolCallback
+                                        .AGENT_EXECUTION_CONTEXT_KEY,
+                                executionContext
+                        )
+                )
+                .call()
+                .content();
+    }
+    
 }

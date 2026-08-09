@@ -194,22 +194,26 @@ public class TrackService {
             cacheNames = CacheNames.TRACKS,
             key = "#trackId"
     )
-    public void delete(UUID trackId) {
+    public void delete(
+            UUID trackId) {
 
-        Track track = findTrack(trackId);
-        
+        Track track =
+                findTrack(
+                        trackId
+                );
+
         UUID deletedTrackId =
                 track.getId();
 
-        trackRepository.delete(track);
+        trackRepository.delete(
+                track
+        );
 
         applicationEventPublisher.publishEvent(
                 TrackSearchDeletedEvent.from(
                         deletedTrackId
                 )
         );
-
-        trackRepository.delete(track);
     }
 
     private Album findAlbum(UUID albumId) {
