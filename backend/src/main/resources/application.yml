@@ -105,6 +105,9 @@ ai:
   openai:
     api-key: ${OPENAI_API_KEY}
 
+    chat:
+      model: ${OPENAI_CHAT_MODEL:gpt-5-mini}
+
   embedding:
     model: text-embedding-3-small
     dimensions: ${EMBEDDING_DIMENSIONS:1024}		
