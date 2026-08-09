@@ -17,18 +17,31 @@ public class SearchController {
     private final SemanticTrackSearchService
             semanticTrackSearchService;
 
+    private final HybridTrackSearchService
+            hybridTrackSearchService;
+
     public SearchController(
             TrackSearchService trackSearchService,
             SemanticTrackSearchService
-                    semanticTrackSearchService) {
+                    semanticTrackSearchService,
+            HybridTrackSearchService
+                    hybridTrackSearchService) {
 
         this.trackSearchService =
                 trackSearchService;
 
         this.semanticTrackSearchService =
                 semanticTrackSearchService;
+
+        this.hybridTrackSearchService =
+                hybridTrackSearchService;
     }
 
+    /*
+     * Lexical / BM25 search.
+     *
+     * Kept for comparison and debugging.
+     */
     @GetMapping
     public List<TrackSearchResult> search(
             @RequestParam("q")
@@ -45,6 +58,11 @@ public class SearchController {
         );
     }
 
+    /*
+     * Pure vector search.
+     *
+     * Kept for comparison and debugging.
+     */
     @GetMapping("/semantic")
     public List<TrackSearchResult>
             semanticSearch(
@@ -58,6 +76,30 @@ public class SearchController {
             int size) {
 
         return semanticTrackSearchService
+                .search(
+                        query,
+                        size
+                );
+    }
+
+    /*
+     * Production-style hybrid search.
+     *
+     * BM25 + vector search + RRF.
+     */
+    @GetMapping("/hybrid")
+    public List<TrackSearchResult>
+            hybridSearch(
+
+            @RequestParam("q")
+            String query,
+
+            @RequestParam(
+                    defaultValue = "20"
+            )
+            int size) {
+
+        return hybridTrackSearchService
                 .search(
                         query,
                         size
