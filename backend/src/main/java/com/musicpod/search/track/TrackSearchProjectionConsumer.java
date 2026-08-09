@@ -7,6 +7,7 @@ import org.springframework.stereotype.Component;
 import com.musicpod.messaging.event.TrackSearchDeletedEvent;
 import com.musicpod.messaging.event.TrackSearchUpsertedEvent;
 import com.musicpod.messaging.kafka.KafkaTopics;
+import org.apache.kafka.clients.consumer.ConsumerRecord;
 
 @Component
 @ConditionalOnProperty(
@@ -32,29 +33,33 @@ public class TrackSearchProjectionConsumer {
             groupId = "musicpod-track-search-projection-v1"
     )
     public void consume(
-            Object event) {
+            ConsumerRecord<String, Object> record) {
 
-        if (event
-                instanceof TrackSearchUpsertedEvent upserted) {
+        Object event = record.value();
 
-            trackSearchProjectionService
-                    .upsert(upserted);
+        if (event instanceof TrackSearchUpsertedEvent upsertedEvent) {
+
+        	trackSearchProjectionService.upsert(
+                    upsertedEvent
+            );
 
             return;
         }
 
-        if (event
-                instanceof TrackSearchDeletedEvent deleted) {
+        if (event instanceof TrackSearchDeletedEvent deletedEvent) {
 
-            trackSearchProjectionService
-                    .delete(deleted);
+        	trackSearchProjectionService.delete(
+                    deletedEvent
+            );
 
             return;
         }
 
         throw new IllegalArgumentException(
                 "Unsupported track search event: "
-                        + event.getClass().getName()
+                        + (event == null
+                            ? "null"
+                            : event.getClass().getName())
         );
     }
 }
