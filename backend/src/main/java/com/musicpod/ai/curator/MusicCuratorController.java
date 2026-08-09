@@ -12,8 +12,9 @@ import jakarta.validation.Valid;
 @RestController
 @RequestMapping("/api/v1/ai/curator")
 @ConditionalOnProperty(
-        name = "spring.ai.model.chat",
-        havingValue = "openai"
+        name = "app.ai.curator.enabled",
+        havingValue = "true",
+        matchIfMissing = true
 )
 public class MusicCuratorController {
 
@@ -28,14 +29,11 @@ public class MusicCuratorController {
 
     @PostMapping
     public ResponseEntity<CuratorResponse> curate(
-
-            @Valid
-            @RequestBody
-            CuratorRequest request) {
+            @Valid @RequestBody CuratorRequest request) {
 
         return ResponseEntity.ok(
                 musicCuratorService.curate(
-                        request.prompt()
+                        request
                 )
         );
     }

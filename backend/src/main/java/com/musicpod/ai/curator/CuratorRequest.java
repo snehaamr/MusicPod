@@ -12,6 +12,8 @@ public record CuratorRequest(
                 max = 1000,
                 message = "Prompt must not exceed 1000 characters"
         )
-        String prompt
+        String prompt,
+
+        boolean allowWrite
 ) {
 }

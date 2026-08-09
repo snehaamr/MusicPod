@@ -6,56 +6,98 @@ import org.springframework.stereotype.Service;
 
 @Service
 @ConditionalOnProperty(
-        name = "spring.ai.model.chat",
-        havingValue = "openai"
+        name = "app.ai.curator.enabled",
+        havingValue = "true",
+        matchIfMissing = true
 )
 public class MusicCuratorService {
 
     private static final String SYSTEM_PROMPT = """
             You are MusicPod's AI Playlist Curator.
 
-            You help users discover music that actually exists
-            in the MusicPod catalog.
+            MusicPod tools are the source of truth.
 
-            RULES:
+            CATALOG RULES:
 
-            1. You must use MusicPod tools before recommending tracks.
+            1. Use MusicPod tools before recommending tracks.
 
-            2. Never invent an artist, album, track, or track ID.
+            2. Never invent artists, albums, tracks, track IDs,
+               playlist IDs, likes, or listening history.
 
             3. Only recommend tracks returned by MusicPod tools.
 
-            4. If the user names a specific artist, respect that
-               artist constraint.
+            4. Respect explicit artist constraints.
 
-            5. If multiple artists are requested, search for each
-               requested artist separately.
+            5. When multiple specific artists are requested, search
+               each artist separately when necessary.
 
-            6. When a user specifies a duration constraint, use the
-               duration tool to verify the proposed playlist duration.
+            6. If the user specifies a duration constraint, use the
+               duration tool to verify the chosen tracks.
 
-            7. If MusicPod does not contain enough tracks to satisfy
-               the request, say so clearly instead of inventing tracks.
+            7. If MusicPod does not contain enough matching tracks,
+               say so instead of inventing music.
 
-            8. Prefer a concise playlist explanation followed by the
-               selected tracks.
+            8. Do not quote song lyrics.
 
-            9. Do not claim that a playlist was created. You currently
-               have recommendation tools only and cannot mutate playlists.
+            PERSONALIZATION RULES:
 
-            10. Do not quote song lyrics.
+            9. When the user asks for recommendations based on their
+               taste, preferences, favorites, likes, or listening
+               habits, use personalized MusicPod tools.
 
-            You are operating on MusicPod's catalog, not your general
-            knowledge of music. MusicPod tool results are the source
-            of truth.
+            10. Liked tracks and recently played tracks belong to the
+                authenticated MusicPod user. Never ask for or invent
+                another user ID.
+
+            11. Personalization is supporting context. Explicit user
+                constraints such as requested artists, duration, or
+                mood still take priority.
+
+            WRITE SAFETY RULES:
+
+            12. Playlist write tools may or may not be available for
+                a request. MusicPod controls their availability.
+
+            13. Only call a playlist write tool when the user
+                explicitly asks to create, save, or modify a
+                playlist.
+
+            14. A request to recommend, suggest, design, generate,
+                or show a playlist does NOT by itself authorize a
+                persistent write.
+
+            15. If write tools are unavailable, do not claim that a
+                playlist was created or modified.
+
+            16. Before writing a playlist, discover and select real
+                MusicPod tracks first.
+
+            17. Track IDs used for writes must come from MusicPod
+                tools.
+
+            18. When a playlist is successfully created and tracks
+                are added, clearly tell the user that it was saved
+                and summarize what was added.
+
+            19. Never delete playlists or remove tracks. Destructive
+                capabilities are not available to you.
             """;
 
     private final ChatClient chatClient;
+
     private final MusicCuratorTools curatorTools;
+
+    private final PersonalizedCuratorTools
+            personalizedCuratorTools;
+
+    private final MusicCuratorWriteTools
+            writeTools;
 
     public MusicCuratorService(
             ChatClient.Builder chatClientBuilder,
-            MusicCuratorTools curatorTools) {
+            MusicCuratorTools curatorTools,
+            PersonalizedCuratorTools personalizedCuratorTools,
+            MusicCuratorWriteTools writeTools) {
 
         this.chatClient =
                 chatClientBuilder
@@ -66,20 +108,50 @@ public class MusicCuratorService {
 
         this.curatorTools =
                 curatorTools;
+
+        this.personalizedCuratorTools =
+                personalizedCuratorTools;
+
+        this.writeTools =
+                writeTools;
     }
 
     public CuratorResponse curate(
-            String prompt) {
+            CuratorRequest request) {
 
-        String content =
-                chatClient
-                        .prompt()
-                        .user(prompt)
-                        .tools(
-                                curatorTools
-                        )
-                        .call()
-                        .content();
+        String content;
+
+        if (request.allowWrite()) {
+
+            content =
+                    chatClient
+                            .prompt()
+                            .user(
+                                    request.prompt()
+                            )
+                            .tools(
+                                    curatorTools,
+                                    personalizedCuratorTools,
+                                    writeTools
+                            )
+                            .call()
+                            .content();
+
+        } else {
+
+            content =
+                    chatClient
+                            .prompt()
+                            .user(
+                                    request.prompt()
+                            )
+                            .tools(
+                                    curatorTools,
+                                    personalizedCuratorTools
+                            )
+                            .call()
+                            .content();
+        }
 
         if (content == null
                 || content.isBlank()) {

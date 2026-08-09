@@ -110,4 +110,7 @@ ai:
 
   embedding:
     model: text-embedding-3-small
-    dimensions: ${EMBEDDING_DIMENSIONS:1024}		
+    dimensions: ${EMBEDDING_DIMENSIONS:1024}	
+
+  curator:
+    enabled: ${AI_CURATOR_ENABLED:true}	
