@@ -96,3 +96,15 @@ app:
     host: ${OPENSEARCH_HOST:localhost}
     port: ${OPENSEARCH_PORT:9200}
     scheme: ${OPENSEARCH_SCHEME:http}
+
+ai:
+  model:
+    chat: none
+    embedding: openai
+
+  openai:
+    api-key: ${OPENAI_API_KEY}
+
+  embedding:
+    model: text-embedding-3-small
+    dimensions: ${EMBEDDING_DIMENSIONS:1024}		

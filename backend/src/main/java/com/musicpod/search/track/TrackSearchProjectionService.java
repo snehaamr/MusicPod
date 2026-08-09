@@ -1,9 +1,9 @@
 package com.musicpod.search.track;
 
 import java.io.IOException;
+import java.util.List;
 
 import org.opensearch.client.opensearch.OpenSearchClient;
-
 import org.springframework.stereotype.Service;
 
 import com.musicpod.messaging.event.TrackSearchDeletedEvent;
@@ -16,26 +16,47 @@ public class TrackSearchProjectionService {
     private final OpenSearchClient
             openSearchClient;
 
+    private final TrackSemanticTextBuilder
+            semanticTextBuilder;
+
+    private final TrackEmbeddingService
+            trackEmbeddingService;
+
     public TrackSearchProjectionService(
-            OpenSearchClient openSearchClient) {
+            OpenSearchClient openSearchClient,
+            TrackSemanticTextBuilder
+                    semanticTextBuilder,
+            TrackEmbeddingService
+                    trackEmbeddingService) {
 
         this.openSearchClient =
                 openSearchClient;
+
+        this.semanticTextBuilder =
+                semanticTextBuilder;
+
+        this.trackEmbeddingService =
+                trackEmbeddingService;
     }
 
     public void upsert(
             TrackSearchUpsertedEvent event) {
 
+        String semanticText =
+                semanticTextBuilder
+                        .build(event);
+
+        List<Float> embedding =
+                trackEmbeddingService
+                        .embed(
+                                semanticText
+                        );
+
         TrackSearchDocument document =
-                new TrackSearchDocument(
-                        event.trackId(),
-                        event.title(),
-                        event.albumId(),
-                        event.albumTitle(),
-                        event.artistId(),
-                        event.artistName(),
-                        event.durationMs(),
-                        event.explicit()
+                TrackSearchDocument.from(
+                        event,
+                        semanticText,
+                        embedding
                 );
 
         try {

@@ -14,11 +14,19 @@ public class SearchController {
     private final TrackSearchService
             trackSearchService;
 
+    private final SemanticTrackSearchService
+            semanticTrackSearchService;
+
     public SearchController(
-            TrackSearchService trackSearchService) {
+            TrackSearchService trackSearchService,
+            SemanticTrackSearchService
+                    semanticTrackSearchService) {
 
         this.trackSearchService =
                 trackSearchService;
+
+        this.semanticTrackSearchService =
+                semanticTrackSearchService;
     }
 
     @GetMapping
@@ -35,5 +43,24 @@ public class SearchController {
                 query,
                 size
         );
+    }
+
+    @GetMapping("/semantic")
+    public List<TrackSearchResult>
+            semanticSearch(
+
+            @RequestParam("q")
+            String query,
+
+            @RequestParam(
+                    defaultValue = "20"
+            )
+            int size) {
+
+        return semanticTrackSearchService
+                .search(
+                        query,
+                        size
+                );
     }
 }
