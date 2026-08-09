@@ -60,4 +60,16 @@ public class KafkaTopicConfig {
                 .replicas(1)
                 .build();
     }
+    
+    @Bean
+    NewTopic trackSearchChangedTopic() {
+
+        return TopicBuilder
+                .name(
+                        KafkaTopics.TRACK_SEARCH_CHANGED
+                )
+                .partitions(3)
+                .replicas(1)
+                .build();
+    }
 }

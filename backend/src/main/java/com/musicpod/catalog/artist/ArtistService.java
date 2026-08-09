@@ -8,7 +8,9 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.context.ApplicationEventPublisher;
 
+import com.musicpod.messaging.event.ArtistUpdatedEvent;
 import com.musicpod.common.api.PageResponse;
 import com.musicpod.common.exception.ResourceNotFoundException;
 
@@ -18,9 +20,12 @@ public class ArtistService {
     private static final int MAX_PAGE_SIZE = 100;
 
     private final ArtistRepository artistRepository;
+    private final ApplicationEventPublisher applicationEventPublisher;
 
-    public ArtistService(ArtistRepository artistRepository) {
+    public ArtistService(ArtistRepository artistRepository, 
+    		ApplicationEventPublisher applicationEventPublisher) {
         this.artistRepository = artistRepository;
+        this.applicationEventPublisher = applicationEventPublisher;
     }
 
     @Transactional
@@ -82,6 +87,12 @@ public class ArtistService {
                 request.name(),
                 request.bio(),
                 request.imageUrl()
+        );
+        
+        applicationEventPublisher.publishEvent(
+                new ArtistUpdatedEvent(
+                        artist.getId()
+                )
         );
 
         return ArtistResponse.from(artist);

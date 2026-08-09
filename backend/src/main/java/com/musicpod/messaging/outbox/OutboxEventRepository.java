@@ -12,43 +12,68 @@ import org.springframework.stereotype.Repository;
 @Repository
 public class OutboxEventRepository {
 
-    private static final String CLAIM_SQL = """
-            WITH candidates AS (
-                SELECT id
-                FROM outbox_events
-                WHERE
-                    (
-                        status = 'PENDING'
-                        AND available_at <= CURRENT_TIMESTAMP
-                    )
-                    OR
-                    (
-                        status = 'PROCESSING'
-                        AND locked_at <
-                            CURRENT_TIMESTAMP - INTERVAL '15 minutes'
-                    )
-                ORDER BY created_at, id
-                FOR UPDATE SKIP LOCKED
-                LIMIT ?
-            )
-            UPDATE outbox_events o
-            SET
-                status = 'PROCESSING',
-                locked_at = CURRENT_TIMESTAMP,
-                attempts = o.attempts + 1
-            FROM candidates c
-            WHERE o.id = c.id
-            RETURNING
-                o.id,
-                o.aggregate_type,
-                o.aggregate_id,
-                o.event_type,
-                o.topic,
-                o.message_key,
-                o.payload::text AS payload,
-                o.attempts,
-                o.created_at
-            """;
+	private static final String CLAIM_SQL = """
+	        WITH candidates AS (
+	            SELECT current_event.id
+	            FROM outbox_events current_event
+	            WHERE
+	                (
+	                    (
+	                        current_event.status = 'PENDING'
+	                        AND current_event.available_at <= CURRENT_TIMESTAMP
+	                    )
+	                    OR
+	                    (
+	                        current_event.status = 'PROCESSING'
+	                        AND current_event.locked_at <
+	                            CURRENT_TIMESTAMP - INTERVAL '15 minutes'
+	                    )
+	                )
+	                AND NOT EXISTS (
+	                    SELECT 1
+	                    FROM outbox_events older_event
+	                    WHERE older_event.topic = current_event.topic
+	                      AND older_event.message_key =
+	                          current_event.message_key
+	                      AND older_event.status IN (
+	                          'PENDING',
+	                          'PROCESSING'
+	                      )
+	                      AND (
+	                          older_event.created_at <
+	                              current_event.created_at
+	                          OR (
+	                              older_event.created_at =
+	                                  current_event.created_at
+	                              AND older_event.id <
+	                                  current_event.id
+	                          )
+	                      )
+	                )
+	            ORDER BY
+	                current_event.created_at,
+	                current_event.id
+	            FOR UPDATE SKIP LOCKED
+	            LIMIT ?
+	        )
+	        UPDATE outbox_events o
+	        SET
+	            status = 'PROCESSING',
+	            locked_at = CURRENT_TIMESTAMP,
+	            attempts = o.attempts + 1
+	        FROM candidates c
+	        WHERE o.id = c.id
+	        RETURNING
+	            o.id,
+	            o.aggregate_type,
+	            o.aggregate_id,
+	            o.event_type,
+	            o.topic,
+	            o.message_key,
+	            o.payload::text AS payload,
+	            o.attempts,
+	            o.created_at
+	        """;
 
     private static final RowMapper<OutboxEvent>
             OUTBOX_EVENT_ROW_MAPPER =

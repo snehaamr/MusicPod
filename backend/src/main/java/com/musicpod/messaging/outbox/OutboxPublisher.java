@@ -16,6 +16,8 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 import com.musicpod.messaging.event.PlaybackRecordedEvent;
+import com.musicpod.messaging.event.TrackSearchDeletedEvent;
+import com.musicpod.messaging.event.TrackSearchUpsertedEvent;
 
 import tools.jackson.databind.json.JsonMapper;
 
@@ -169,6 +171,18 @@ public class OutboxPublisher {
                     jsonMapper.readValue(
                             outboxEvent.payload(),
                             PlaybackRecordedEvent.class
+                    );
+
+            case TrackSearchUpsertedEvent.EVENT_TYPE ->
+                    jsonMapper.readValue(
+                            outboxEvent.payload(),
+                            TrackSearchUpsertedEvent.class
+                    );
+
+            case TrackSearchDeletedEvent.EVENT_TYPE ->
+                    jsonMapper.readValue(
+                            outboxEvent.payload(),
+                            TrackSearchDeletedEvent.class
                     );
 
             default ->

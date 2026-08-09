@@ -8,11 +8,13 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.context.ApplicationEventPublisher;
 
 import com.musicpod.catalog.artist.Artist;
 import com.musicpod.catalog.artist.ArtistRepository;
 import com.musicpod.common.api.PageResponse;
 import com.musicpod.common.exception.ResourceNotFoundException;
+import com.musicpod.messaging.event.AlbumUpdatedEvent;
 
 @Service
 public class AlbumService {
@@ -21,13 +23,16 @@ public class AlbumService {
 
     private final AlbumRepository albumRepository;
     private final ArtistRepository artistRepository;
+    private final ApplicationEventPublisher applicationEventPublisher;
 
     public AlbumService(
             AlbumRepository albumRepository,
-            ArtistRepository artistRepository) {
+            ArtistRepository artistRepository,
+            ApplicationEventPublisher applicationEventPublisher) {
 
         this.albumRepository = albumRepository;
         this.artistRepository = artistRepository;
+        this.applicationEventPublisher = applicationEventPublisher;
     }
 
     @Transactional
@@ -102,6 +107,12 @@ public class AlbumService {
                 request.title(),
                 request.releaseDate(),
                 request.coverImageUrl()
+        );
+        
+        applicationEventPublisher.publishEvent(
+                new AlbumUpdatedEvent(
+                        album.getId()
+                )
         );
 
         return AlbumResponse.from(album);

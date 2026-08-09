@@ -9,7 +9,10 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.context.ApplicationEventPublisher;
 
+import com.musicpod.messaging.event.TrackSearchDeletedEvent;
+import com.musicpod.messaging.event.TrackSearchUpsertedEvent;
 import com.musicpod.catalog.album.Album;
 import com.musicpod.catalog.album.AlbumRepository;
 import com.musicpod.common.api.PageResponse;
@@ -28,13 +31,17 @@ public class TrackService {
 
     private final TrackRepository trackRepository;
     private final AlbumRepository albumRepository;
+    private final ApplicationEventPublisher applicationEventPublisher;
 
     public TrackService(
             TrackRepository trackRepository,
-            AlbumRepository albumRepository) {
+            AlbumRepository albumRepository,
+            ApplicationEventPublisher applicationEventPublisher) {
 
         this.trackRepository = trackRepository;
         this.albumRepository = albumRepository;
+        this.applicationEventPublisher =
+                applicationEventPublisher;
     }
 
     @Transactional
@@ -62,6 +69,12 @@ public class TrackService {
 
             Track savedTrack =
                     trackRepository.saveAndFlush(track);
+            
+            applicationEventPublisher.publishEvent(
+                    TrackSearchUpsertedEvent.from(
+                            savedTrack
+                    )
+            );
 
             return TrackResponse.from(savedTrack);
 
@@ -159,6 +172,11 @@ public class TrackService {
         try {
 
             trackRepository.flush();
+            applicationEventPublisher.publishEvent(
+                    TrackSearchUpsertedEvent.from(
+                            track
+                    )
+            );
 
             return TrackResponse.from(track);
 
@@ -179,6 +197,17 @@ public class TrackService {
     public void delete(UUID trackId) {
 
         Track track = findTrack(trackId);
+        
+        UUID deletedTrackId =
+                track.getId();
+
+        trackRepository.delete(track);
+
+        applicationEventPublisher.publishEvent(
+                TrackSearchDeletedEvent.from(
+                        deletedTrackId
+                )
+        );
 
         trackRepository.delete(track);
     }
