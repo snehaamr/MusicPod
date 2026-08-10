@@ -11,13 +11,21 @@ import com.musicpod.common.exception.ResourceNotFoundException;
 @Service
 public class AgentStepService {
 
-    private final AgentStepRepository agentStepRepository;
+    private final AgentStepRepository
+            agentStepRepository;
+
+    private final AuditPayloadSanitizer
+            sanitizer;
 
     public AgentStepService(
-            AgentStepRepository agentStepRepository) {
+            AgentStepRepository agentStepRepository,
+            AuditPayloadSanitizer sanitizer) {
 
         this.agentStepRepository =
                 agentStepRepository;
+
+        this.sanitizer =
+                sanitizer;
     }
 
     @Transactional(
@@ -36,13 +44,14 @@ public class AgentStepService {
                         sequenceNumber,
                         toolName,
                         toolRisk,
-                        inputJson
+                        sanitizer.toolPayload(
+                                inputJson
+                        )
                 );
 
         AgentStep savedStep =
-                agentStepRepository.saveAndFlush(
-                        step
-                );
+                agentStepRepository
+                        .saveAndFlush(step);
 
         return savedStep.getId();
     }
@@ -59,7 +68,9 @@ public class AgentStepService {
                 findStep(stepId);
 
         step.complete(
-                outputJson,
+                sanitizer.toolPayload(
+                        outputJson
+                ),
                 durationMs
         );
     }
@@ -76,8 +87,10 @@ public class AgentStepService {
                 findStep(stepId);
 
         step.fail(
-                errorMessage(
-                        throwable
+                sanitizer.error(
+                        errorMessage(
+                                throwable
+                        )
                 ),
                 durationMs
         );
@@ -104,7 +117,9 @@ public class AgentStepService {
         }
 
         if (throwable.getMessage() != null
-                && !throwable.getMessage().isBlank()) {
+                && !throwable
+                        .getMessage()
+                        .isBlank()) {
 
             return throwable.getMessage();
         }

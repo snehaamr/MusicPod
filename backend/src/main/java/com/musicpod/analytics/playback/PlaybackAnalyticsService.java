@@ -14,15 +14,25 @@ public class PlaybackAnalyticsService {
     private final TrackPlayStatsRepository
             trackPlayStatsRepository;
 
+    private final TrackPlayHourlyStatsRepository
+            trackPlayHourlyStatsRepository;
+
     public PlaybackAnalyticsService(
-            ProcessedPlaybackEventRepository processedPlaybackEventRepository,
-            TrackPlayStatsRepository trackPlayStatsRepository) {
+            ProcessedPlaybackEventRepository
+                    processedPlaybackEventRepository,
+            TrackPlayStatsRepository
+                    trackPlayStatsRepository,
+            TrackPlayHourlyStatsRepository
+                    trackPlayHourlyStatsRepository) {
 
         this.processedPlaybackEventRepository =
                 processedPlaybackEventRepository;
 
         this.trackPlayStatsRepository =
                 trackPlayStatsRepository;
+
+        this.trackPlayHourlyStatsRepository =
+                trackPlayHourlyStatsRepository;
     }
 
     @Transactional
@@ -38,15 +48,31 @@ public class PlaybackAnalyticsService {
         if (!firstProcessing) {
 
             /*
-             * Kafka delivered an event that we have
-             * already processed.
+             * Kafka may redeliver an event.
              *
-             * Idempotently ignore it.
+             * The processed event table ensures
+             * both the all-time aggregate and
+             * hourly aggregate are incremented
+             * only once.
              */
             return;
         }
 
+        /*
+         * Existing all-time aggregate.
+         */
         trackPlayStatsRepository
-                .increment(event);
+                .increment(
+                        event
+                );
+
+        /*
+         * New time-bucketed aggregate used
+         * for trending calculations.
+         */
+        trackPlayHourlyStatsRepository
+                .increment(
+                        event
+                );
     }
 }

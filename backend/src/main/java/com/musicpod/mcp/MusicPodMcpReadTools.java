@@ -1,6 +1,7 @@
 package com.musicpod.mcp;
 
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 import org.springframework.ai.mcp.annotation.McpTool;
@@ -21,17 +22,25 @@ public class MusicPodMcpReadTools {
     private final HybridTrackSearchService
             hybridTrackSearchService;
 
-    private final TrackService trackService;
+    private final TrackService
+            trackService;
+
+    private final McpAuditService
+            mcpAuditService;
 
     public MusicPodMcpReadTools(
             HybridTrackSearchService hybridTrackSearchService,
-            TrackService trackService) {
+            TrackService trackService,
+            McpAuditService mcpAuditService) {
 
         this.hybridTrackSearchService =
                 hybridTrackSearchService;
 
         this.trackService =
                 trackService;
+
+        this.mcpAuditService =
+                mcpAuditService;
     }
 
     @McpTool(
@@ -68,14 +77,28 @@ public class MusicPodMcpReadTools {
             )
             Integer size) {
 
-        int effectiveSize =
+        int requestedSize =
                 size == null
                         ? DEFAULT_SEARCH_SIZE
                         : size;
 
-        return hybridTrackSearchService.search(
-                query,
-                effectiveSize
+        return mcpAuditService.execute(
+                "musicpod_search_tracks",
+                false,
+                McpAuditService.RISK_READ_ONLY,
+                Map.of(
+                        "query",
+                        query == null
+                                ? ""
+                                : query,
+                        "size",
+                        requestedSize
+                ),
+                userId ->
+                        hybridTrackSearchService.search(
+                                query,
+                                requestedSize
+                        )
         );
     }
 
@@ -102,6 +125,33 @@ public class MusicPodMcpReadTools {
             )
             String trackId) {
 
+        return mcpAuditService.execute(
+                "musicpod_get_track",
+                false,
+                McpAuditService.RISK_READ_ONLY,
+                Map.of(
+                        "trackId",
+                        trackId == null
+                                ? ""
+                                : trackId
+                ),
+                userId -> {
+
+                    UUID parsedTrackId =
+                            parseTrackId(
+                                    trackId
+                            );
+
+                    return trackService.getById(
+                            parsedTrackId
+                    );
+                }
+        );
+    }
+
+    private UUID parseTrackId(
+            String trackId) {
+
         if (trackId == null
                 || trackId.isBlank()) {
 
@@ -110,14 +160,11 @@ public class MusicPodMcpReadTools {
             );
         }
 
-        UUID parsedTrackId;
-
         try {
 
-            parsedTrackId =
-                    UUID.fromString(
-                            trackId.trim()
-                    );
+            return UUID.fromString(
+                    trackId.trim()
+            );
 
         } catch (IllegalArgumentException exception) {
 
@@ -126,9 +173,5 @@ public class MusicPodMcpReadTools {
                     exception
             );
         }
-
-        return trackService.getById(
-                parsedTrackId
-        );
     }
 }

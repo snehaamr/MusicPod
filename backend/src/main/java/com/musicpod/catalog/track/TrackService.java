@@ -1,6 +1,11 @@
 package com.musicpod.catalog.track;
 
 import java.util.UUID;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.stream.Collectors;
 
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
@@ -106,6 +111,46 @@ public class TrackService {
                         );
 
         return TrackResponse.from(track);
+    }
+    
+    @Transactional(readOnly = true)
+    public Map<UUID, TrackResponse> getByIds(
+            Collection<UUID> trackIds) {
+
+        if (trackIds == null
+                || trackIds.isEmpty()) {
+
+            return Map.of();
+        }
+
+        List<UUID> distinctTrackIds =
+                trackIds
+                        .stream()
+                        .filter(
+                                Objects::nonNull
+                        )
+                        .distinct()
+                        .toList();
+
+        if (distinctTrackIds.isEmpty()) {
+
+            return Map.of();
+        }
+
+        List<Track> tracks =
+                trackRepository
+                        .findAllByIdsWithAlbumAndArtist(
+                                distinctTrackIds
+                        );
+
+        return tracks
+                .stream()
+                .collect(
+                        Collectors.toMap(
+                                Track::getId,
+                                TrackResponse::from
+                        )
+                );
     }
 
     @Transactional(readOnly = true)

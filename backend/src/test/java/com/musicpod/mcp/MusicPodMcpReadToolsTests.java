@@ -1,7 +1,11 @@
 package com.musicpod.mcp;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyBoolean;
+import static org.mockito.ArgumentMatchers.anyString;
 
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
@@ -9,10 +13,10 @@ import static org.mockito.Mockito.when;
 
 import java.util.List;
 import java.util.UUID;
+import java.util.function.Function;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-
 import org.junit.jupiter.api.extension.ExtendWith;
 
 import org.mockito.Mock;
@@ -31,73 +35,111 @@ class MusicPodMcpReadToolsTests {
             hybridTrackSearchService;
 
     @Mock
-    private TrackService trackService;
+    private TrackService
+            trackService;
 
-    private MusicPodMcpReadTools tools;
+    @Mock
+    private McpAuditService
+            mcpAuditService;
+
+    private MusicPodMcpReadTools
+            tools;
 
     @BeforeEach
     void setUp() {
 
+        when(
+                mcpAuditService.execute(
+                        anyString(),
+                        anyBoolean(),
+                        anyString(),
+                        any(),
+                        any()
+                )
+        ).thenAnswer(invocation -> {
+
+            @SuppressWarnings("unchecked")
+            Function<UUID, Object> operation =
+                    invocation.getArgument(4);
+
+            return operation.apply(
+                    UUID.randomUUID()
+            );
+        });
+
         tools =
                 new MusicPodMcpReadTools(
                         hybridTrackSearchService,
-                        trackService
+                        trackService,
+                        mcpAuditService
                 );
     }
 
     @Test
-    void searchUsesDefaultSizeWhenSizeIsMissing() {
+    void searchTracksUsesProvidedSize() {
+
+        List<TrackSearchResult> expected =
+                List.of();
 
         when(
                 hybridTrackSearchService.search(
-                        "songs by Queen",
-                        10
+                        "Coldplay",
+                        5
                 )
         ).thenReturn(
-                List.of()
+                expected
         );
 
         List<TrackSearchResult> result =
                 tools.searchTracks(
-                        "songs by Queen",
-                        null
+                        "Coldplay",
+                        5
                 );
 
-        assertEquals(
-                List.of(),
+        assertSame(
+                expected,
                 result
         );
 
         verify(
                 hybridTrackSearchService
         ).search(
-                "songs by Queen",
-                10
+                "Coldplay",
+                5
         );
     }
 
     @Test
-    void searchUsesRequestedSize() {
+    void searchTracksUsesDefaultSize() {
+
+        List<TrackSearchResult> expected =
+                List.of();
 
         when(
                 hybridTrackSearchService.search(
-                        "romantic Kishore Kumar songs",
-                        5
+                        "Coldplay",
+                        10
                 )
         ).thenReturn(
-                List.of()
+                expected
         );
 
-        tools.searchTracks(
-                "romantic Kishore Kumar songs",
-                5
+        List<TrackSearchResult> result =
+                tools.searchTracks(
+                        "Coldplay",
+                        null
+                );
+
+        assertSame(
+                expected,
+                result
         );
 
         verify(
                 hybridTrackSearchService
         ).search(
-                "romantic Kishore Kumar songs",
-                5
+                "Coldplay",
+                10
         );
     }
 
@@ -107,7 +149,7 @@ class MusicPodMcpReadToolsTests {
         UUID trackId =
                 UUID.randomUUID();
 
-        TrackResponse response =
+        TrackResponse expected =
                 org.mockito.Mockito.mock(
                         TrackResponse.class
                 );
@@ -117,7 +159,7 @@ class MusicPodMcpReadToolsTests {
                         trackId
                 )
         ).thenReturn(
-                response
+                expected
         );
 
         TrackResponse result =
@@ -125,8 +167,8 @@ class MusicPodMcpReadToolsTests {
                         trackId.toString()
                 );
 
-        assertEquals(
-                response,
+        assertSame(
+                expected,
                 result
         );
 
@@ -138,7 +180,7 @@ class MusicPodMcpReadToolsTests {
     }
 
     @Test
-    void getTrackRejectsInvalidUuid() {
+    void invalidTrackIdDoesNotCallTrackService() {
 
         assertThrows(
                 IllegalArgumentException.class,
@@ -154,7 +196,7 @@ class MusicPodMcpReadToolsTests {
     }
 
     @Test
-    void getTrackRejectsBlankTrackId() {
+    void blankTrackIdDoesNotCallTrackService() {
 
         assertThrows(
                 IllegalArgumentException.class,

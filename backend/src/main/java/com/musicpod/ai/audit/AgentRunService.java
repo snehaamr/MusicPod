@@ -77,8 +77,10 @@ public class AgentRunService {
                 findRun(runId);
 
         run.fail(
-                errorMessage(
-                        throwable
+                sanitizer.error(
+                        errorMessage(
+                                throwable
+                        )
                 )
         );
     }

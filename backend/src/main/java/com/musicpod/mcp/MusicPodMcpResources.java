@@ -1,5 +1,6 @@
 package com.musicpod.mcp;
 
+import java.util.Map;
 import java.util.UUID;
 
 import org.springframework.ai.mcp.annotation.McpResource;
@@ -10,18 +11,10 @@ import com.musicpod.catalog.track.TrackService;
 import com.musicpod.library.playlist.PlaylistResponse;
 import com.musicpod.library.playlist.PlaylistService;
 
-// IMPORTANT:
-// Copy the exact CurrentUserProvider import from
-// MusicPodMcpPersonalizedTools.java
-import com.musicpod.auth.CurrentUserProvider;
-
 import tools.jackson.databind.json.JsonMapper;
 
 @Component
 public class MusicPodMcpResources {
-
-    private final CurrentUserProvider
-            currentUserProvider;
 
     private final TrackService
             trackService;
@@ -32,14 +25,14 @@ public class MusicPodMcpResources {
     private final JsonMapper
             jsonMapper;
 
+    private final McpAuditService
+            mcpAuditService;
+
     public MusicPodMcpResources(
-            CurrentUserProvider currentUserProvider,
             TrackService trackService,
             PlaylistService playlistService,
-            JsonMapper jsonMapper) {
-
-        this.currentUserProvider =
-                currentUserProvider;
+            JsonMapper jsonMapper,
+            McpAuditService mcpAuditService) {
 
         this.trackService =
                 trackService;
@@ -49,6 +42,9 @@ public class MusicPodMcpResources {
 
         this.jsonMapper =
                 jsonMapper;
+
+        this.mcpAuditService =
+                mcpAuditService;
     }
 
     @McpResource(
@@ -62,19 +58,34 @@ public class MusicPodMcpResources {
     public String getTrack(
             String trackId) {
 
-        UUID parsedTrackId =
-                parseUuid(
-                        trackId,
-                        "Track ID"
-                );
+        return mcpAuditService.executeJson(
+                "musicpod_resource_track",
+                false,
+                McpAuditService.RISK_READ_ONLY,
+                Map.of(
+                        "trackId",
+                        trackId == null
+                                ? ""
+                                : trackId
+                ),
+                userId -> {
 
-        TrackResponse track =
-                trackService.getById(
-                        parsedTrackId
-                );
+                    UUID parsedTrackId =
+                            parseUuid(
+                                    trackId,
+                                    "Track ID"
+                            );
 
-        return jsonMapper.writeValueAsString(
-                track
+                    TrackResponse track =
+                            trackService.getById(
+                                    parsedTrackId
+                            );
+
+                    return jsonMapper
+                            .writeValueAsString(
+                                    track
+                            );
+                }
         );
     }
 
@@ -90,23 +101,35 @@ public class MusicPodMcpResources {
     public String getOwnedPlaylist(
             String playlistId) {
 
-        UUID parsedPlaylistId =
-                parseUuid(
-                        playlistId,
-                        "Playlist ID"
-                );
+        return mcpAuditService.executeJson(
+                "musicpod_resource_owned_playlist",
+                false,
+                McpAuditService.RISK_READ_ONLY,
+                Map.of(
+                        "playlistId",
+                        playlistId == null
+                                ? ""
+                                : playlistId
+                ),
+                userId -> {
 
-        UUID userId =
-                currentUserProvider.userId();
+                    UUID parsedPlaylistId =
+                            parseUuid(
+                                    playlistId,
+                                    "Playlist ID"
+                            );
 
-        PlaylistResponse playlist =
-                playlistService.getById(
-                        userId,
-                        parsedPlaylistId
-                );
+                    PlaylistResponse playlist =
+                            playlistService.getById(
+                                    userId,
+                                    parsedPlaylistId
+                            );
 
-        return jsonMapper.writeValueAsString(
-                playlist
+                    return jsonMapper
+                            .writeValueAsString(
+                                    playlist
+                            );
+                }
         );
     }
 

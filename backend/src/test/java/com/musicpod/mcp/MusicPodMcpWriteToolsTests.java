@@ -4,6 +4,10 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyBoolean;
+import static org.mockito.ArgumentMatchers.anyString;
+
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
@@ -11,6 +15,7 @@ import static org.mockito.Mockito.when;
 import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
+import java.util.function.Function;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -19,7 +24,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import com.musicpod.auth.CurrentUserProvider;
 import com.musicpod.library.playlist.CreatePlaylistRequest;
 import com.musicpod.library.playlist.PlaylistResponse;
 import com.musicpod.library.playlist.PlaylistService;
@@ -28,13 +32,16 @@ import com.musicpod.library.playlist.PlaylistTrackResponse;
 @ExtendWith(MockitoExtension.class)
 class MusicPodMcpWriteToolsTests {
 
-    @Mock
-    private CurrentUserProvider
-            currentUserProvider;
+    private static final UUID USER_ID =
+            UUID.randomUUID();
 
     @Mock
     private PlaylistService
             playlistService;
+
+    @Mock
+    private McpAuditService
+            mcpAuditService;
 
     private MusicPodMcpWriteTools
             tools;
@@ -42,18 +49,34 @@ class MusicPodMcpWriteToolsTests {
     @BeforeEach
     void setUp() {
 
+        when(
+                mcpAuditService.execute(
+                        anyString(),
+                        anyBoolean(),
+                        anyString(),
+                        any(),
+                        any()
+                )
+        ).thenAnswer(invocation -> {
+
+            @SuppressWarnings("unchecked")
+            Function<UUID, Object> operation =
+                    invocation.getArgument(4);
+
+            return operation.apply(
+                    USER_ID
+            );
+        });
+
         tools =
                 new MusicPodMcpWriteTools(
-                        currentUserProvider,
-                        playlistService
+                        playlistService,
+                        mcpAuditService
                 );
     }
 
     @Test
     void createPlaylistUsesAuthenticatedUser() {
-
-        UUID userId =
-                UUID.randomUUID();
 
         UUID playlistId =
                 UUID.randomUUID();
@@ -68,14 +91,8 @@ class MusicPodMcpWriteToolsTests {
                 );
 
         when(
-                currentUserProvider.userId()
-        ).thenReturn(
-                userId
-        );
-
-        when(
                 playlistService.create(
-                        userId,
+                        USER_ID,
                         new CreatePlaylistRequest(
                                 "Road Trip",
                                 "Music for driving"
@@ -97,25 +114,28 @@ class MusicPodMcpWriteToolsTests {
         );
 
         verify(
-                currentUserProvider
-        ).userId();
-
-        verify(
                 playlistService
         ).create(
-                userId,
+                USER_ID,
                 new CreatePlaylistRequest(
                         "Road Trip",
                         "Music for driving"
                 )
         );
+
+        verify(
+                mcpAuditService
+        ).execute(
+                anyString(),
+                anyBoolean(),
+                anyString(),
+                any(),
+                any()
+        );
     }
 
     @Test
     void addTracksUsesAuthenticatedUser() {
-
-        UUID userId =
-                UUID.randomUUID();
 
         UUID playlistId =
                 UUID.randomUUID();
@@ -130,14 +150,8 @@ class MusicPodMcpWriteToolsTests {
                 List.of();
 
         when(
-                currentUserProvider.userId()
-        ).thenReturn(
-                userId
-        );
-
-        when(
                 playlistService.addTracks(
-                        userId,
+                        USER_ID,
                         playlistId,
                         List.of(
                                 track1,
@@ -168,13 +182,9 @@ class MusicPodMcpWriteToolsTests {
         );
 
         verify(
-                currentUserProvider
-        ).userId();
-
-        verify(
                 playlistService
         ).addTracks(
-                userId,
+                USER_ID,
                 playlistId,
                 List.of(
                         track1,
@@ -186,9 +196,6 @@ class MusicPodMcpWriteToolsTests {
     @Test
     void duplicateTrackIdsAreRemoved() {
 
-        UUID userId =
-                UUID.randomUUID();
-
         UUID playlistId =
                 UUID.randomUUID();
 
@@ -196,14 +203,8 @@ class MusicPodMcpWriteToolsTests {
                 UUID.randomUUID();
 
         when(
-                currentUserProvider.userId()
-        ).thenReturn(
-                userId
-        );
-
-        when(
                 playlistService.addTracks(
-                        userId,
+                        USER_ID,
                         playlistId,
                         List.of(trackId)
                 )
@@ -222,14 +223,14 @@ class MusicPodMcpWriteToolsTests {
         verify(
                 playlistService
         ).addTracks(
-                userId,
+                USER_ID,
                 playlistId,
                 List.of(trackId)
         );
     }
 
     @Test
-    void invalidPlaylistIdDoesNotResolveUser() {
+    void invalidPlaylistIdDoesNotWrite() {
 
         assertThrows(
                 IllegalArgumentException.class,
@@ -244,13 +245,12 @@ class MusicPodMcpWriteToolsTests {
         );
 
         verifyNoInteractions(
-                currentUserProvider,
                 playlistService
         );
     }
 
     @Test
-    void emptyTrackListDoesNotResolveUser() {
+    void emptyTrackListDoesNotWrite() {
 
         assertThrows(
                 IllegalArgumentException.class,
@@ -263,7 +263,6 @@ class MusicPodMcpWriteToolsTests {
         );
 
         verifyNoInteractions(
-                currentUserProvider,
                 playlistService
         );
     }
@@ -281,7 +280,6 @@ class MusicPodMcpWriteToolsTests {
         );
 
         verifyNoInteractions(
-                currentUserProvider,
                 playlistService
         );
     }

@@ -1,6 +1,7 @@
 package com.musicpod.mcp;
 
-import java.util.UUID;
+import java.util.List;
+import java.util.Map;
 
 import org.springframework.ai.mcp.annotation.McpTool;
 import org.springframework.ai.mcp.annotation.McpToolParam;
@@ -11,12 +12,8 @@ import com.musicpod.library.likedtrack.LikedTrackResponse;
 import com.musicpod.library.likedtrack.LikedTrackService;
 import com.musicpod.playback.PlaybackEventResponse;
 import com.musicpod.playback.PlaybackService;
-
-// IMPORTANT:
-// Import the EXISTING CurrentUserProvider from your project.
-// Use the package returned by:
-// grep -R "class CurrentUserProvider" -n src/main/java
-import com.musicpod.auth.CurrentUserProvider;
+import com.musicpod.recommendation.RecommendationResponse;
+import com.musicpod.recommendation.RecommendationService;
 
 @Component
 public class MusicPodMcpPersonalizedTools {
@@ -25,28 +22,35 @@ public class MusicPodMcpPersonalizedTools {
     private static final int DEFAULT_SIZE = 10;
     private static final int MAX_SIZE = 20;
 
-    private final CurrentUserProvider
-            currentUserProvider;
-
     private final LikedTrackService
             likedTrackService;
 
     private final PlaybackService
             playbackService;
 
-    public MusicPodMcpPersonalizedTools(
-            CurrentUserProvider currentUserProvider,
-            LikedTrackService likedTrackService,
-            PlaybackService playbackService) {
+    private final McpAuditService
+            mcpAuditService;
 
-        this.currentUserProvider =
-                currentUserProvider;
+    private final RecommendationService
+            recommendationService;
+
+    public MusicPodMcpPersonalizedTools(
+            LikedTrackService likedTrackService,
+            PlaybackService playbackService,
+            McpAuditService mcpAuditService,
+            RecommendationService recommendationService) {
 
         this.likedTrackService =
                 likedTrackService;
 
         this.playbackService =
                 playbackService;
+
+        this.mcpAuditService =
+                mcpAuditService;
+
+        this.recommendationService =
+                recommendationService;
     }
 
     @McpTool(
@@ -85,21 +89,42 @@ public class MusicPodMcpPersonalizedTools {
             )
             Integer size) {
 
-        int effectivePage =
-                normalizePage(page);
+        int requestedPage =
+                page == null
+                        ? DEFAULT_PAGE
+                        : page;
 
-        int effectiveSize =
-                normalizeSize(size);
+        int requestedSize =
+                size == null
+                        ? DEFAULT_SIZE
+                        : size;
 
-        UUID userId =
-                currentUserProvider.userId();
+        return mcpAuditService.execute(
+                "musicpod_get_liked_tracks",
+                false,
+                McpAuditService.RISK_READ_ONLY,
+                Map.of(
+                        "page",
+                        requestedPage,
+                        "size",
+                        requestedSize
+                ),
+                userId -> {
 
-        return likedTrackService
-                .getLikedTracks(
-                        userId,
-                        effectivePage,
-                        effectiveSize
-                );
+                    int effectivePage =
+                            normalizePage(page);
+
+                    int effectiveSize =
+                            normalizeSize(size);
+
+                    return likedTrackService
+                            .getLikedTracks(
+                                    userId,
+                                    effectivePage,
+                                    effectiveSize
+                            );
+                }
+        );
     }
 
     @McpTool(
@@ -138,21 +163,99 @@ public class MusicPodMcpPersonalizedTools {
             )
             Integer size) {
 
-        int effectivePage =
-                normalizePage(page);
+        int requestedPage =
+                page == null
+                        ? DEFAULT_PAGE
+                        : page;
 
-        int effectiveSize =
-                normalizeSize(size);
+        int requestedSize =
+                size == null
+                        ? DEFAULT_SIZE
+                        : size;
 
-        UUID userId =
-                currentUserProvider.userId();
+        return mcpAuditService.execute(
+                "musicpod_get_recently_played",
+                false,
+                McpAuditService.RISK_READ_ONLY,
+                Map.of(
+                        "page",
+                        requestedPage,
+                        "size",
+                        requestedSize
+                ),
+                userId -> {
 
-        return playbackService
-                .getRecentlyPlayed(
-                        userId,
-                        effectivePage,
-                        effectiveSize
-                );
+                    int effectivePage =
+                            normalizePage(page);
+
+                    int effectiveSize =
+                            normalizeSize(size);
+
+                    return playbackService
+                            .getRecentlyPlayed(
+                                    userId,
+                                    effectivePage,
+                                    effectiveSize
+                            );
+                }
+        );
+    }
+
+    @McpTool(
+            name = "musicpod_get_recommendations",
+            title = "Get My Recommendations",
+            description =
+                    "Returns personalized track recommendations "
+                    + "for the currently authenticated MusicPod user. "
+                    + "Recommendations are derived from listening "
+                    + "history and liked tracks. "
+                    + "User identity is derived from the "
+                    + "authenticated JWT.",
+            annotations =
+                    @McpTool.McpAnnotations(
+                            readOnlyHint = true,
+                            destructiveHint = false,
+                            idempotentHint = true,
+                            openWorldHint = false
+                    )
+    )
+    public List<RecommendationResponse>
+            getRecommendations(
+
+            @McpToolParam(
+                    description =
+                            "Maximum number of recommendations "
+                            + "to return. Must be between 1 and 20. "
+                            + "Defaults to 10.",
+                    required = false
+            )
+            Integer size) {
+
+        int requestedSize =
+                size == null
+                        ? DEFAULT_SIZE
+                        : size;
+
+        return mcpAuditService.execute(
+                "musicpod_get_recommendations",
+                false,
+                McpAuditService.RISK_READ_ONLY,
+                Map.of(
+                        "size",
+                        requestedSize
+                ),
+                userId -> {
+
+                    int effectiveSize =
+                            normalizeSize(size);
+
+                    return recommendationService
+                            .getRecommendations(
+                                    userId,
+                                    effectiveSize
+                            );
+                }
+        );
     }
 
     private int normalizePage(
@@ -163,6 +266,7 @@ public class MusicPodMcpPersonalizedTools {
         }
 
         if (page < 0) {
+
             throw new IllegalArgumentException(
                     "Page must be greater than or equal to 0"
             );

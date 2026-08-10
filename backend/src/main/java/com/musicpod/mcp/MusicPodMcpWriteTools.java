@@ -3,13 +3,13 @@ package com.musicpod.mcp;
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 import org.springframework.ai.mcp.annotation.McpTool;
 import org.springframework.ai.mcp.annotation.McpToolParam;
 import org.springframework.stereotype.Component;
 
-import com.musicpod.auth.CurrentUserProvider;
 import com.musicpod.library.playlist.CreatePlaylistRequest;
 import com.musicpod.library.playlist.PlaylistResponse;
 import com.musicpod.library.playlist.PlaylistService;
@@ -18,39 +18,37 @@ import com.musicpod.library.playlist.PlaylistTrackResponse;
 @Component
 public class MusicPodMcpWriteTools {
 
-    private static final int MAX_TRACKS_PER_REQUEST =
-            50;
-
-    private final CurrentUserProvider
-            currentUserProvider;
+    private static final int
+            MAX_TRACKS_PER_REQUEST = 50;
 
     private final PlaylistService
             playlistService;
 
-    public MusicPodMcpWriteTools(
-            CurrentUserProvider currentUserProvider,
-            PlaylistService playlistService) {
+    private final McpAuditService
+            mcpAuditService;
 
-        this.currentUserProvider =
-                currentUserProvider;
+    public MusicPodMcpWriteTools(
+            PlaylistService playlistService,
+            McpAuditService mcpAuditService) {
 
         this.playlistService =
                 playlistService;
+
+        this.mcpAuditService =
+                mcpAuditService;
     }
 
     @McpTool(
             name = "musicpod_create_playlist",
             title = "Create Playlist",
             description =
-                    "Creates a playlist owned by the "
-                    + "currently authenticated MusicPod user.",
-            annotations =
-                    @McpTool.McpAnnotations(
-                            readOnlyHint = false,
-                            destructiveHint = false,
-                            idempotentHint = false,
-                            openWorldHint = false
-                    )
+                    "Creates a playlist owned by the currently authenticated MusicPod user.",
+            annotations = @McpTool.McpAnnotations(
+                    readOnlyHint = false,
+                    destructiveHint = false,
+                    idempotentHint = false,
+                    openWorldHint = false
+            )
     )
     public PlaylistResponse createPlaylist(
 
@@ -63,24 +61,38 @@ public class MusicPodMcpWriteTools {
 
             @McpToolParam(
                     description =
-                            "Optional playlist description. "
-                            + "Maximum 1000 characters.",
+                            "Optional playlist description. Maximum 1000 characters.",
                     required = false
             )
             String description) {
 
-        CreatePlaylistRequest request =
-                validateCreateRequest(
-                        name,
-                        description
-                );
+        return mcpAuditService.execute(
+                "musicpod_create_playlist",
+                true,
+                McpAuditService.RISK_WRITE,
+                Map.of(
+                        "name",
+                        name == null
+                                ? ""
+                                : name,
 
-        UUID userId =
-                currentUserProvider.userId();
+                        "descriptionPresent",
+                        description != null
+                                && !description.isBlank()
+                ),
+                userId -> {
 
-        return playlistService.create(
-                userId,
-                request
+                    CreatePlaylistRequest request =
+                            validateCreateRequest(
+                                    name,
+                                    description
+                            );
+
+                    return playlistService.create(
+                            userId,
+                            request
+                    );
+                }
         );
     }
 
@@ -88,64 +100,72 @@ public class MusicPodMcpWriteTools {
             name = "musicpod_add_tracks_to_playlist",
             title = "Add Tracks To Playlist",
             description =
-                    "Adds one or more tracks to a playlist "
-                    + "owned by the currently authenticated "
-                    + "MusicPod user.",
-            annotations =
-                    @McpTool.McpAnnotations(
-                            readOnlyHint = false,
-                            destructiveHint = false,
-                            idempotentHint = true,
-                            openWorldHint = false
-                    )
+                    "Adds one or more tracks to a playlist owned by the currently authenticated MusicPod user.",
+            annotations = @McpTool.McpAnnotations(
+                    readOnlyHint = false,
+                    destructiveHint = false,
+                    idempotentHint = true,
+                    openWorldHint = false
+            )
     )
     public AddTracksToPlaylistResponse
             addTracksToPlaylist(
 
             @McpToolParam(
                     description =
-                            "UUID of the playlist owned by "
-                            + "the authenticated user.",
+                            "UUID of the playlist owned by the authenticated user.",
                     required = true
             )
             String playlistId,
 
             @McpToolParam(
                     description =
-                            "Track UUIDs to add. "
-                            + "Maximum 50 tracks.",
+                            "Track UUIDs to add. Maximum 50 tracks.",
                     required = true
             )
             List<String> trackIds) {
 
-        UUID parsedPlaylistId =
-                parseUuid(
-                        playlistId,
-                        "Playlist ID"
-                );
+        return mcpAuditService.execute(
+                "musicpod_add_tracks_to_playlist",
+                true,
+                McpAuditService.RISK_WRITE,
+                Map.of(
+                        "playlistId",
+                        playlistId == null
+                                ? ""
+                                : playlistId,
 
-        List<UUID> parsedTrackIds =
-                parseTrackIds(
-                        trackIds
-                );
+                        "trackCount",
+                        trackIds == null
+                                ? 0
+                                : trackIds.size()
+                ),
+                userId -> {
 
-        /*
-         * Resolve identity only after validating
-         * caller-controlled arguments.
-         */
-        UUID userId =
-                currentUserProvider.userId();
+                    UUID parsedPlaylistId =
+                            parseUuid(
+                                    playlistId,
+                                    "Playlist ID"
+                            );
 
-        List<PlaylistTrackResponse> addedTracks =
-                playlistService.addTracks(
-                        userId,
-                        parsedPlaylistId,
-                        parsedTrackIds
-                );
+                    List<UUID> parsedTrackIds =
+                            parseTrackIds(
+                                    trackIds
+                            );
 
-        return new AddTracksToPlaylistResponse(
-                parsedPlaylistId,
-                addedTracks
+                    List<PlaylistTrackResponse>
+                            addedTracks =
+                            playlistService.addTracks(
+                                    userId,
+                                    parsedPlaylistId,
+                                    parsedTrackIds
+                            );
+
+                    return new AddTracksToPlaylistResponse(
+                            parsedPlaylistId,
+                            addedTracks
+                    );
+                }
         );
     }
 
@@ -171,8 +191,7 @@ public class MusicPodMcpWriteTools {
         if (request.name().length() > 200) {
 
             throw new IllegalArgumentException(
-                    "Playlist name must not exceed "
-                            + "200 characters"
+                    "Playlist name must not exceed 200 characters"
             );
         }
 
@@ -181,8 +200,7 @@ public class MusicPodMcpWriteTools {
                         > 1000) {
 
             throw new IllegalArgumentException(
-                    "Playlist description must not exceed "
-                            + "1000 characters"
+                    "Playlist description must not exceed 1000 characters"
             );
         }
 
