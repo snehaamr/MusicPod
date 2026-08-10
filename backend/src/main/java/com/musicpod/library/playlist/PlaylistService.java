@@ -1,6 +1,9 @@
 package com.musicpod.library.playlist;
 
 import java.util.UUID;
+import java.util.ArrayList;
+import java.util.LinkedHashSet;
+import java.util.List;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -234,6 +237,65 @@ public class PlaylistService {
 
         return PlaylistTrackResponse.from(
                 saved
+        );
+    }
+    
+    @Transactional
+    public List<PlaylistTrackResponse> addTracks(
+            UUID userId,
+            UUID playlistId,
+            List<UUID> trackIds) {
+
+        if (trackIds == null
+                || trackIds.isEmpty()) {
+
+            throw new IllegalArgumentException(
+                    "At least one track is required"
+            );
+        }
+
+        if (trackIds.size() > 50) {
+
+            throw new IllegalArgumentException(
+                    "Cannot add more than 50 tracks at once"
+            );
+        }
+
+        /*
+         * Preserve caller order while removing
+         * duplicate track IDs.
+         */
+        List<UUID> uniqueTrackIds =
+                new ArrayList<>(
+                        new LinkedHashSet<>(
+                                trackIds
+                        )
+                );
+
+        List<PlaylistTrackResponse> addedTracks =
+                new ArrayList<>(
+                        uniqueTrackIds.size()
+                );
+
+        for (UUID trackId : uniqueTrackIds) {
+
+            if (trackId == null) {
+                throw new IllegalArgumentException(
+                        "Track ID must not be null"
+                );
+            }
+
+            addedTracks.add(
+                    addTrack(
+                            userId,
+                            playlistId,
+                            trackId
+                    )
+            );
+        }
+
+        return List.copyOf(
+                addedTracks
         );
     }
 
