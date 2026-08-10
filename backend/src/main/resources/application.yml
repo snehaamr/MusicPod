@@ -93,7 +93,7 @@ spring:
 
         capabilities:
           tool: true
-          resource: false
+          resource: true
           prompt: false
           completion: false
 
