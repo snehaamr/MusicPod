@@ -1,0 +1,43 @@
+groups:
+
+  - name: musicpod-outbox
+
+    rules:
+
+      - alert: MusicPodOutboxDeadEvents
+
+        expr: musicpod_outbox_dead > 0
+
+        for: 1m
+
+        labels:
+          severity: critical
+          service: musicpod
+          component: outbox
+
+        annotations:
+          summary: "MusicPod has dead outbox events"
+
+          description: >-
+            One or more transactional outbox events have
+            exhausted all publish attempts and entered
+            the DEAD state.
+
+
+      - alert: MusicPodOutboxBacklogHigh
+
+        expr: musicpod_outbox_pending > 100
+
+        for: 5m
+
+        labels:
+          severity: warning
+          service: musicpod
+          component: outbox
+
+        annotations:
+          summary: "MusicPod outbox backlog is high"
+
+          description: >-
+            More than 100 transactional outbox events
+            have remained pending for at least 5 minutes.

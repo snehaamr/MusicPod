@@ -39,19 +39,15 @@ public class SecurityConfig {
                                         .permitAll()
 
                                         .requestMatchers(
+                                        		"/actuator",
                                                 "/actuator/health",
-                                                "/actuator/info"
+                                                "/actuator/info",
+                                                "/actuator/metrics",
+                                                "/actuator/metrics/**",
+                                                "/actuator/prometheus"
                                         )
                                         .permitAll()
 
-                                        /*
-                                         * Catalog stays public for now.
-                                         *
-                                         * Later, when we introduce roles,
-                                         * catalog reads can remain public
-                                         * while catalog mutations become
-                                         * ADMIN-only.
-                                         */
                                         .requestMatchers(
                                                 "/api/v1/artists/**",
                                                 "/api/v1/albums/**",
@@ -67,6 +63,7 @@ public class SecurityConfig {
                                         .anyRequest()
                                         .authenticated()
                 )
+                
 
                 .oauth2ResourceServer(
                         oauth2 ->

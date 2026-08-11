@@ -20,6 +20,7 @@ import com.musicpod.messaging.event.TrackSearchDeletedEvent;
 import com.musicpod.messaging.event.TrackSearchUpsertedEvent;
 
 import tools.jackson.databind.json.JsonMapper;
+import io.micrometer.core.instrument.Timer;
 
 @Component
 @ConditionalOnProperty(
@@ -50,11 +51,14 @@ public class OutboxPublisher {
     private final int maxAttempts;
 
     private final long sendTimeoutSeconds;
+    
+    private final OutboxPublishMetrics outboxPublishMetrics;
 
     public OutboxPublisher(
             OutboxEventRepository outboxEventRepository,
             KafkaTemplate<Object, Object> kafkaTemplate,
             JsonMapper jsonMapper,
+            OutboxPublishMetrics outboxPublishMetrics,
             @Value("${app.outbox.batch-size:25}")
             int batchSize,
             @Value("${app.outbox.max-attempts:20}")
@@ -70,6 +74,9 @@ public class OutboxPublisher {
 
         this.jsonMapper =
                 jsonMapper;
+
+        this.outboxPublishMetrics =
+                outboxPublishMetrics;
 
         this.batchSize =
                 batchSize;
@@ -105,6 +112,10 @@ public class OutboxPublisher {
     private boolean publish(
             OutboxEvent outboxEvent) {
 
+        Timer.Sample timer =
+                outboxPublishMetrics
+                        .startTimer();
+
         try {
 
             Object event =
@@ -128,6 +139,11 @@ public class OutboxPublisher {
                             outboxEvent.id()
                     );
 
+            outboxPublishMetrics
+                    .recordSuccess(
+                            timer
+                    );
+
             log.info(
                     "Published outbox event {} type={} attempt={}",
                     outboxEvent.id(),
@@ -139,8 +155,18 @@ public class OutboxPublisher {
 
         } catch (InterruptedException exception) {
 
+            /*
+             * Restore the interrupt flag because
+             * Future.get() clears it when throwing
+             * InterruptedException.
+             */
             Thread.currentThread()
                     .interrupt();
+
+            outboxPublishMetrics
+                    .recordFailure(
+                            timer
+                    );
 
             handleFailure(
                     outboxEvent,
@@ -150,6 +176,11 @@ public class OutboxPublisher {
             return false;
 
         } catch (Exception exception) {
+
+            outboxPublishMetrics
+                    .recordFailure(
+                            timer
+                    );
 
             handleFailure(
                     outboxEvent,

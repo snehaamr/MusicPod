@@ -240,4 +240,23 @@ public class OutboxEventRepository {
                 id
         );
     }
+    
+    public long countByStatus(
+            String status) {
+
+        Long count =
+                jdbcTemplate.queryForObject(
+                        """
+                        SELECT COUNT(*)
+                        FROM outbox_events
+                        WHERE status = ?
+                        """,
+                        Long.class,
+                        status
+                );
+
+        return count == null
+                ? 0L
+                : count;
+    }
 }

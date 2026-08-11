@@ -123,6 +123,12 @@ management:
     health:
       probes:
         enabled: true
+  
+  metrics:
+    access: read-only
+    distribution:
+      percentiles-histogram:
+        music-outbox-publish-duration: true
 
 
 app:

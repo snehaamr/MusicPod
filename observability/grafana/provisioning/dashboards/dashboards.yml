@@ -1,0 +1,13 @@
+apiVersion: 1
+
+providers:
+  - name: MusicPod
+    orgId: 1
+    folder: MusicPod
+    type: file
+    disableDeletion: false
+    updateIntervalSeconds: 10
+    allowUiUpdates: true
+
+    options:
+      path: /var/lib/grafana/dashboards

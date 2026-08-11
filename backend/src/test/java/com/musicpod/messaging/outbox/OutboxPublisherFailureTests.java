@@ -12,6 +12,8 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeUnit;
+import io.micrometer.core.instrument.Timer;
 
 import java.sql.Timestamp;
 import java.time.Instant;
@@ -37,6 +39,7 @@ import org.testcontainers.utility.DockerImageName;
 
 import com.musicpod.messaging.event.PlaybackRecordedEvent;
 
+import io.micrometer.core.instrument.MeterRegistry;
 import tools.jackson.databind.json.JsonMapper;
 import static org.mockito.Mockito.reset;
 
@@ -91,6 +94,13 @@ class OutboxPublisherFailureTests {
 
     @Autowired
     private JsonMapper jsonMapper;
+    
+    @Autowired
+    private OutboxPublishMetrics
+            outboxPublishMetrics;
+    
+    @Autowired
+    private MeterRegistry meterRegistry;
 
     /*
      * This is the failure point we're controlling.
@@ -122,6 +132,7 @@ class OutboxPublisherFailureTests {
                         outboxEventRepository,
                         kafkaTemplate,
                         jsonMapper,
+                        outboxPublishMetrics,
                         25,
                         20,
                         10
@@ -527,13 +538,16 @@ class OutboxPublisherFailureTests {
          */
         OutboxPublisher publisherWithThreeAttempts =
                 new OutboxPublisher(
-                        outboxEventRepository,
+                		outboxEventRepository,
                         kafkaTemplate,
                         jsonMapper,
+                        outboxPublishMetrics,
                         25,
                         3,
                         10
                 );
+        
+        
 
         CompletableFuture<SendResult<Object, Object>>
                 failedSend =
@@ -1364,9 +1378,10 @@ class OutboxPublisherFailureTests {
          */
         OutboxPublisher publisherOne =
                 new OutboxPublisher(
-                        outboxEventRepository,
+                		outboxEventRepository,
                         kafkaTemplate,
                         jsonMapper,
+                        outboxPublishMetrics,
                         1,
                         20,
                         10
@@ -1374,9 +1389,10 @@ class OutboxPublisherFailureTests {
 
         OutboxPublisher publisherTwo =
                 new OutboxPublisher(
-                        outboxEventRepository,
+                		outboxEventRepository,
                         kafkaTemplate,
                         jsonMapper,
+                        outboxPublishMetrics,
                         1,
                         20,
                         10
@@ -1574,5 +1590,131 @@ class OutboxPublisherFailureTests {
 
             executor.shutdownNow();
         }
+    }
+    
+    @Test
+    void failedPublishIncrementsFailureMetric() {
+
+        double before =
+                meterRegistry
+                        .counter(
+                                "musicpod.outbox.publish.failure"
+                        )
+                        .count();
+
+        UUID eventId =
+                UUID.randomUUID();
+
+        PlaybackRecordedEvent event =
+                new PlaybackRecordedEvent(
+                        eventId,
+                        UUID.randomUUID(),
+                        UUID.randomUUID(),
+                        45_000,
+                        Instant.now(),
+                        1
+                );
+
+        outboxService.enqueue(event);
+
+        CompletableFuture<SendResult<Object, Object>>
+                failedFuture =
+                new CompletableFuture<>();
+
+        failedFuture.completeExceptionally(
+                new RuntimeException(
+                        "simulated Kafka outage"
+                )
+        );
+
+        when(
+                kafkaTemplate.send(
+                        anyString(),
+                        anyString(),
+                        any()
+                )
+        ).thenReturn(
+                failedFuture
+        );
+
+        outboxPublisher
+                .publishPendingEvents();
+
+        double after =
+                meterRegistry
+                        .counter(
+                                "musicpod.outbox.publish.failure"
+                        )
+                        .count();
+
+        assertThat(after)
+                .isEqualTo(
+                        before + 1
+                );
+    }
+    
+    @Test
+    void publishAttemptRecordsDurationMetric() {
+
+        Timer timer =
+                meterRegistry
+                        .timer(
+                                "musicpod.outbox.publish.duration"
+                        );
+
+        long before =
+                timer.count();
+
+        UUID eventId =
+                UUID.randomUUID();
+
+        PlaybackRecordedEvent event =
+                new PlaybackRecordedEvent(
+                        eventId,
+                        UUID.randomUUID(),
+                        UUID.randomUUID(),
+                        45_000,
+                        Instant.now(),
+                        1
+                );
+
+        outboxService.enqueue(event);
+
+        CompletableFuture<SendResult<Object, Object>>
+                failedFuture =
+                new CompletableFuture<>();
+
+        failedFuture.completeExceptionally(
+                new RuntimeException(
+                        "simulated Kafka outage"
+                )
+        );
+
+        when(
+                kafkaTemplate.send(
+                        anyString(),
+                        anyString(),
+                        any()
+                )
+        ).thenReturn(
+                failedFuture
+        );
+
+        outboxPublisher
+                .publishPendingEvents();
+
+        assertThat(
+                timer.count()
+        ).isEqualTo(
+                before + 1
+        );
+
+        assertThat(
+                timer.totalTime(
+                        TimeUnit.NANOSECONDS
+                )
+        ).isGreaterThan(
+                0
+        );
     }
 }

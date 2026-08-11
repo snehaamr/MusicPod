@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.when;
 
+import java.io.IOException;
 import java.time.Duration;
 import java.time.LocalDate;
 import java.util.Collections;
@@ -14,6 +15,7 @@ import org.junit.jupiter.api.Test;
 
 import org.opensearch.client.opensearch.OpenSearchClient;
 import org.opensearch.client.opensearch.core.GetResponse;
+import org.opensearch.client.opensearch._types.OpenSearchException;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -22,6 +24,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
+import org.opensearch.client.opensearch._types.OpenSearchException;
 
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.PostgreSQLContainer;
@@ -483,9 +486,9 @@ class TrackSearchProjectionIntegrationTests {
                             trackId
                     );
 
-            if (response.found()
-                    && response.source()
-                    != null) {
+            if (response != null
+                    && response.found()
+                    && response.source() != null) {
 
                 return response.source();
             }
@@ -500,7 +503,6 @@ class TrackSearchProjectionIntegrationTests {
                         + trackId
         );
     }
-
     /*
      * Wait until UPDATE has reached OpenSearch.
      *
@@ -595,22 +597,70 @@ class TrackSearchProjectionIntegrationTests {
         );
     }
 
-    private GetResponse<TrackSearchDocument>
-            getDocument(
-                    UUID trackId)
-                    throws Exception {
+     
+    private GetResponse<TrackSearchDocument> getDocument(
+            UUID trackId)
+            throws IOException {
 
-        return openSearchClient.get(
-                request ->
-                        request
-                                .index(
-                                        SearchIndexNames.TRACKS
-                                )
-                                .id(
-                                        trackId.toString()
-                                ),
-                TrackSearchDocument.class
-        );
+        try {
+
+            return openSearchClient.get(
+                    request ->
+                            request
+                                    .index(
+                                            SearchIndexNames.TRACKS
+                                    )
+                                    .id(
+                                            trackId.toString()
+                                    ),
+                    TrackSearchDocument.class
+            );
+
+        } catch (OpenSearchException exception) {
+
+            if (isTransientOpenSearchReadFailure(
+                    exception
+            )) {
+                return null;
+            }
+
+            throw exception;
+        }
+    }
+
+    private boolean isTransientOpenSearchReadFailure(
+            OpenSearchException exception) {
+
+        String errorType =
+                exception
+                        .error()
+                        .type();
+
+        return switch (errorType) {
+
+            /*
+             * Consumer has not created the
+             * search index yet.
+             */
+            case "index_not_found_exception" ->
+                    true;
+
+            /*
+             * Index exists but its primary
+             * shard is still starting/recovering.
+             */
+            case "no_shard_available_action_exception" ->
+                    true;
+
+            case "illegal_index_shard_state_exception" ->
+                    true;
+
+            case "unavailable_shards_exception" ->
+                    true;
+
+            default ->
+                    false;
+        };
     }
 
     /*

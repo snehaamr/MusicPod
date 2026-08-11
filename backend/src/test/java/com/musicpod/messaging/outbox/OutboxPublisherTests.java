@@ -39,6 +39,9 @@ class OutboxPublisherTests {
     private JsonMapper jsonMapper;
 
     private OutboxPublisher publisher;
+    
+    @Mock
+    private OutboxPublishMetrics outboxPublishMetrics;
 
     @BeforeEach
     void setUp() {
@@ -48,6 +51,7 @@ class OutboxPublisherTests {
                         outboxEventRepository,
                         kafkaTemplate,
                         jsonMapper,
+                        outboxPublishMetrics,
                         25,
                         3,
                         1
