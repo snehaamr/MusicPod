@@ -116,6 +116,8 @@ management:
         include:
           - health
           - info
+          - metrics
+          - prometheus
 
   endpoint:
     health:
